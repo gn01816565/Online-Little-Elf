@@ -335,6 +335,7 @@
         let currentPlayerId = null;
         let isHost = false;
         let gameState = null;
+        let keyboardHandler = null; // 儲存鍵盤事件處理器
         
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
@@ -384,28 +385,29 @@
         
         // 建立房間
         async function createRoom() {
-            console.log('createRoom function called');
-            const hostName = document.getElementById('hostName').value.trim();
-            console.log('Host name:', hostName);
-            
-            if (!hostName) {
-                alert('請輸入你的暱稱');
-                return;
-            }
-            
-            console.log('Database status:', database ? 'Available' : 'Not available');
-            
-            if (!database) {
-                alert('Firebase 未正確配置，無法建立房間');
-                return;
-            }
-            
-            console.log('Creating room...');
-            
-            const roomCode = generateRoomCode();
-            currentRoomId = roomCode;
-            currentPlayerId = 'player_' + Date.now();
-            isHost = true;
+            try {
+                console.log('createRoom function called');
+                const hostName = document.getElementById('hostName').value.trim();
+                console.log('Host name:', hostName);
+
+                if (!hostName) {
+                    alert('請輸入你的暱稱');
+                    return;
+                }
+
+                console.log('Database status:', database ? 'Available' : 'Not available');
+
+                if (!database) {
+                    alert('Firebase 未正確配置，無法建立房間');
+                    return;
+                }
+
+                console.log('Creating room...');
+
+                const roomCode = generateRoomCode();
+                currentRoomId = roomCode;
+                currentPlayerId = 'player_' + Date.now();
+                isHost = true;
             
             // 演示模式 - 直接切換到等待室
             if (isDemo) {
@@ -452,43 +454,48 @@
             
             // 監聽房間變化
             listenToRoom();
-            
+
             // 切換到等待室
             document.getElementById('menuScreen').classList.remove('active');
             document.getElementById('lobbyScreen').classList.add('active');
             document.getElementById('displayRoomCode').textContent = roomCode;
+            } catch (error) {
+                console.error('建立房間時發生錯誤:', error);
+                alert('建立房間失敗，請稍後再試。\n錯誤訊息: ' + error.message);
+            }
         }
-        
+
         // 加入房間
         async function joinRoom() {
-            console.log('joinRoom function called');
-            const playerName = document.getElementById('playerName').value.trim();
-            const roomCode = document.getElementById('roomCode').value.trim().toUpperCase();
-            
-            console.log('Player name:', playerName);
-            console.log('Room code:', roomCode);
-            
-            if (!playerName) {
-                alert('請輸入你的暱稱');
-                return;
-            }
-            
-            if (!roomCode || roomCode.length !== 6) {
-                alert('請輸入正確的6位數房間代碼');
-                return;
-            }
-            
-            if (isDemo) {
-                alert('⚠️ 演示模式\n\nFirebase 未配置，無法加入線上房間。\n\n要啟用真正的多人連線，請依照 README 配置 Firebase。');
-                return;
-            }
-            
-            console.log('Database status:', database ? 'Available' : 'Not available');
-            
-            if (!database) {
-                alert('Firebase 未正確配置，無法加入房間');
-                return;
-            }
+            try {
+                console.log('joinRoom function called');
+                const playerName = document.getElementById('playerName').value.trim();
+                const roomCode = document.getElementById('roomCode').value.trim().toUpperCase();
+
+                console.log('Player name:', playerName);
+                console.log('Room code:', roomCode);
+
+                if (!playerName) {
+                    alert('請輸入你的暱稱');
+                    return;
+                }
+
+                if (!roomCode || roomCode.length !== 6) {
+                    alert('請輸入正確的6位數房間代碼');
+                    return;
+                }
+
+                if (isDemo) {
+                    alert('⚠️ 演示模式\n\nFirebase 未配置，無法加入線上房間。\n\n要啟用真正的多人連線，請依照 README 配置 Firebase。');
+                    return;
+                }
+
+                console.log('Database status:', database ? 'Available' : 'Not available');
+
+                if (!database) {
+                    alert('Firebase 未正確配置，無法加入房間');
+                    return;
+                }
             
             // 檢查房間是否存在
             const roomRef = database.ref(`rooms/${roomCode}`);
@@ -533,13 +540,17 @@
             
             // 監聽房間變化
             listenToRoom();
-            
+
             // 切換到等待室
             document.getElementById('menuScreen').classList.remove('active');
             document.getElementById('lobbyScreen').classList.add('active');
             document.getElementById('displayRoomCode').textContent = roomCode;
+            } catch (error) {
+                console.error('加入房間時發生錯誤:', error);
+                alert('加入房間失敗，請檢查房間代碼。\n錯誤訊息: ' + error.message);
+            }
         }
-        
+
         // 監聽房間變化
         function listenToRoom() {
             const roomRef = database.ref(`rooms/${currentRoomId}`);
@@ -576,11 +587,14 @@
         function updatePlayersList(players) {
             const playersList = document.getElementById('playersList');
             const playerCount = document.getElementById('playerCount');
-            
+
+            if (!players || !playersList || !playerCount) return;
+
             playerCount.textContent = Object.keys(players).length;
             playersList.innerHTML = '';
-            
+
             Object.entries(players).forEach(([id, player]) => {
+                if (!player) return;
                 const div = document.createElement('div');
                 div.className = 'player-item';
                 div.style.background = player.color + '20';
@@ -602,21 +616,26 @@
         
         // 開始遊戲
         async function startGame() {
-            if (!isHost) return;
-            
-            const roomRef = database.ref(`rooms/${currentRoomId}`);
-            const snapshot = await roomRef.once('value');
-            const roomData = snapshot.val();
-            
-            // 生成迷宮
-            const maze = generateMaze();
-            
-            // 更新房間狀態
-            await roomRef.update({
-                status: 'playing',
-                maze: maze,
-                startedAt: Date.now()
-            });
+            try {
+                if (!isHost) return;
+
+                const roomRef = database.ref(`rooms/${currentRoomId}`);
+                const snapshot = await roomRef.once('value');
+                const roomData = snapshot.val();
+
+                // 生成迷宮
+                const maze = generateMaze();
+
+                // 更新房間狀態
+                await roomRef.update({
+                    status: 'playing',
+                    maze: maze,
+                    startedAt: Date.now()
+                });
+            } catch (error) {
+                console.error('開始遊戲時發生錯誤:', error);
+                alert('開始遊戲失敗，請稍後再試。\n錯誤訊息: ' + error.message);
+            }
         }
         
         // 生成迷宮
@@ -691,17 +710,23 @@
         
         // 設定鍵盤控制
         function setupKeyboardControls() {
+            // 移除舊的監聽器，避免重複
+            if (keyboardHandler) {
+                document.removeEventListener('keydown', keyboardHandler);
+            }
+
             let lastMoveTime = 0;
             const moveDelay = 120;
-            
-            document.addEventListener('keydown', async (e) => {
-                if (!gameState || Date.now() - lastMoveTime < moveDelay) return;
-                
-                const playerRef = database.ref(`rooms/${currentRoomId}/players/${currentPlayerId}`);
-                const snapshot = await playerRef.once('value');
-                const player = snapshot.val();
-                
-                if (!player) return;
+
+            keyboardHandler = async (e) => {
+                if (!gameState || !database || Date.now() - lastMoveTime < moveDelay) return;
+
+                try {
+                    const playerRef = database.ref(`rooms/${currentRoomId}/players/${currentPlayerId}`);
+                    const snapshot = await playerRef.once('value');
+                    const player = snapshot.val();
+
+                    if (!player) return;
                 
                 let newX = player.x;
                 let newY = player.y;
@@ -742,7 +767,13 @@
                         await playerRef.update(updates);
                     }
                 }
-            });
+                } catch (error) {
+                    console.error('處理鍵盤輸入時發生錯誤:', error);
+                }
+            };
+
+            // 添加新的監聽器
+            document.addEventListener('keydown', keyboardHandler);
         }
         
         // 更新遊戲狀態
@@ -762,8 +793,8 @@
         
         // 遊戲循環
         function gameLoop() {
-            if (!gameState) return;
-            
+            if (!gameState || !ctx) return;
+
             // 清空畫布
             ctx.fillStyle = '#000';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -798,7 +829,9 @@
             // 繪製玩家
             if (gameState.players) {
                 Object.entries(gameState.players).forEach(([id, player]) => {
-                    ctx.fillStyle = player.color;
+                    if (!player || player.x === undefined || player.y === undefined) return;
+
+                    ctx.fillStyle = player.color || '#FFD700';
                     ctx.beginPath();
                     ctx.arc(
                         player.x * CELL_SIZE + CELL_SIZE / 2,
@@ -817,13 +850,15 @@
                     ctx.fill();
                     
                     // 名字
-                    ctx.fillStyle = player.color;
-                    ctx.font = 'bold 9px Arial';
-                    ctx.textAlign = 'center';
-                    ctx.strokeStyle = '#000';
-                    ctx.lineWidth = 2;
-                    ctx.strokeText(player.name, player.x * CELL_SIZE + CELL_SIZE / 2, player.y * CELL_SIZE - 5);
-                    ctx.fillText(player.name, player.x * CELL_SIZE + CELL_SIZE / 2, player.y * CELL_SIZE - 5);
+                    if (player.name) {
+                        ctx.fillStyle = player.color || '#FFD700';
+                        ctx.font = 'bold 9px Arial';
+                        ctx.textAlign = 'center';
+                        ctx.strokeStyle = '#000';
+                        ctx.lineWidth = 2;
+                        ctx.strokeText(player.name, player.x * CELL_SIZE + CELL_SIZE / 2, player.y * CELL_SIZE - 5);
+                        ctx.fillText(player.name, player.x * CELL_SIZE + CELL_SIZE / 2, player.y * CELL_SIZE - 5);
+                    }
                 });
             }
             
@@ -832,11 +867,17 @@
         
         // 離開房間
         async function leaveRoom() {
-            if (currentRoomId && currentPlayerId && database) {
-                const playerRef = database.ref(`rooms/${currentRoomId}/players/${currentPlayerId}`);
-                await playerRef.remove();
+            try {
+                if (currentRoomId && currentPlayerId && database) {
+                    const playerRef = database.ref(`rooms/${currentRoomId}/players/${currentPlayerId}`);
+                    await playerRef.remove();
+                }
+                window.location.reload();
+            } catch (error) {
+                console.error('離開房間時發生錯誤:', error);
+                // 即使發生錯誤也重新載入頁面
+                window.location.reload();
             }
-            window.location.reload();
         }
         
         // 頁面載入後設定事件監聽器
