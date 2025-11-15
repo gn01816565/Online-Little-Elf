@@ -282,6 +282,7 @@
                 <p style="margin-bottom: 10px; color: #666;">
                     使用方向鍵 ↑ ↓ ← → 或 W A S D 移動
                 </p>
+                <button id="btnToggleSound" style="margin-bottom: 10px;">🔊 音效：開啟</button>
                 <button class="back-button" id="btnLeaveGame">離開遊戲</button>
             </div>
         </div>
@@ -329,8 +330,232 @@
             '#FF1493',  // 深粉色
             '#4169E1'   // 皇家藍
         ];
-        
+
+        // ===========================================
+        // 🔊 音效系統（Web Audio API）
+        // ===========================================
+        let audioContext = null;
+        let isSoundEnabled = true;
+
+        // 初始化音效系統
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            // 解鎖音效（某些瀏覽器需要用戶互動）
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+        }
+
+        // 播放音效的通用函數
+        function playSound(frequency, duration, type = 'sine', volume = 0.3) {
+            if (!isSoundEnabled) return;
+
+            try {
+                initAudio();
+
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                oscillator.type = type;
+                oscillator.frequency.value = frequency;
+
+                gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + duration);
+            } catch (error) {
+                console.log('Audio error:', error);
+            }
+        }
+
+        // 1. 吃小豆子音效 (wakawaka)
+        function soundEatDot() {
+            if (!isSoundEnabled) return;
+            try {
+                initAudio();
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+
+                osc.type = 'square';
+                osc.frequency.value = 800;
+
+                gain.gain.setValueAtTime(0.15, audioContext.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.05);
+
+                osc.start(audioContext.currentTime);
+                osc.stop(audioContext.currentTime + 0.05);
+            } catch (e) { console.log('Audio error:', e); }
+        }
+
+        // 2. 吃能量豆音效 (power-up 上升音階)
+        function soundEatPowerPellet() {
+            if (!isSoundEnabled) return;
+            try {
+                initAudio();
+            const notes = [523, 659, 784, 1047]; // C-E-G-C 和弦
+
+                notes.forEach((freq, i) => {
+                    const osc = audioContext.createOscillator();
+                    const gain = audioContext.createGain();
+
+                    osc.connect(gain);
+                    gain.connect(audioContext.destination);
+
+                    osc.type = 'triangle';
+                    osc.frequency.value = freq;
+
+                    const startTime = audioContext.currentTime + i * 0.08;
+                    gain.gain.setValueAtTime(0.25, startTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.2);
+
+                    osc.start(startTime);
+                    osc.stop(startTime + 0.2);
+                });
+            } catch (e) { console.log('Audio error:', e); }
+        }
+
+        // 3. 進入能量模式音效 (變身)
+        function soundPowerMode() {
+            if (!isSoundEnabled) return;
+            try {
+                initAudio();
+
+                // 快速上升音階
+                for (let i = 0; i < 10; i++) {
+                    const osc = audioContext.createOscillator();
+                    const gain = audioContext.createGain();
+
+                    osc.connect(gain);
+                    gain.connect(audioContext.destination);
+
+                    osc.type = 'sawtooth';
+                    osc.frequency.value = 200 + i * 80;
+
+                    const startTime = audioContext.currentTime + i * 0.03;
+                    gain.gain.setValueAtTime(0.2, startTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.1);
+
+                    osc.start(startTime);
+                    osc.stop(startTime + 0.1);
+                }
+            } catch (e) { console.log('Audio error:', e); }
+        }
+
+        // 4. 碰撞音效 (砰)
+        function soundCollision() {
+            if (!isSoundEnabled) return;
+            try {
+                initAudio();
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, audioContext.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(50, audioContext.currentTime + 0.1);
+
+                gain.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+
+                osc.start(audioContext.currentTime);
+                osc.stop(audioContext.currentTime + 0.1);
+            } catch (e) { console.log('Audio error:', e); }
+        }
+
+        // 5. 得分音效 (叮)
+        function soundScore() {
+            if (!isSoundEnabled) return;
+            try {
+                initAudio();
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+
+                osc.type = 'sine';
+                osc.frequency.value = 1200;
+
+                gain.gain.setValueAtTime(0.2, audioContext.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+
+                osc.start(audioContext.currentTime);
+                osc.stop(audioContext.currentTime + 0.15);
+            } catch (e) { console.log('Audio error:', e); }
+        }
+
+        // 6. 能量豆即將結束警告音 (嘟嘟嘟)
+        function soundPowerWarning() {
+            if (!isSoundEnabled) return;
+            try {
+                initAudio();
+
+                for (let i = 0; i < 3; i++) {
+                    const osc = audioContext.createOscillator();
+                    const gain = audioContext.createGain();
+
+                    osc.connect(gain);
+                    gain.connect(audioContext.destination);
+
+                    osc.type = 'square';
+                    osc.frequency.value = 600;
+
+                    const startTime = audioContext.currentTime + i * 0.15;
+                    gain.gain.setValueAtTime(0.15, startTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.08);
+
+                    osc.start(startTime);
+                    osc.stop(startTime + 0.08);
+                }
+            } catch (e) { console.log('Audio error:', e); }
+        }
+
+        // 7. 遊戲倒數音效 (滴答)
+        function soundTick() {
+            playSound(800, 0.05, 'square', 0.15);
+        }
+
+        // 8. 遊戲結束音效 (勝利音樂)
+        function soundGameEnd() {
+            if (!isSoundEnabled) return;
+            try {
+                initAudio();
+                const melody = [523, 659, 784, 1047, 784, 1047, 1319]; // C-E-G-C-G-C-E
+
+                melody.forEach((freq, i) => {
+                    const osc = audioContext.createOscillator();
+                    const gain = audioContext.createGain();
+
+                    osc.connect(gain);
+                    gain.connect(audioContext.destination);
+
+                    osc.type = 'sine';
+                    osc.frequency.value = freq;
+
+                    const startTime = audioContext.currentTime + i * 0.15;
+                    gain.gain.setValueAtTime(0.25, startTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.3);
+
+                    osc.start(startTime);
+                    osc.stop(startTime + 0.3);
+                });
+            } catch (e) { console.log('Audio error:', e); }
+        }
+
+        // ===========================================
         // 遊戲狀態
+        // ===========================================
         let currentRoomId = null;
         let currentPlayerId = null;
         let isHost = false;
@@ -734,12 +959,15 @@
                         if (gameState.maze[newY][newX] === 2) {
                             updates.score = (player.score || 0) + 10;
                             await database.ref(`rooms/${currentRoomId}/maze/${newY}/${newX}`).set(0);
+                            soundEatDot(); // 🔊 吃豆子音效
                         } else if (gameState.maze[newY][newX] === 3) {
                             // 吃到能量豆：加分 + 進入 power mode
                             updates.score = (player.score || 0) + 50;
                             updates.powerMode = true;
                             updates.powerEndTime = Date.now() + 15000; // 15秒 power mode
                             await database.ref(`rooms/${currentRoomId}/maze/${newY}/${newX}`).set(0);
+                            soundEatPowerPellet(); // 🔊 吃能量豆音效
+                            setTimeout(() => soundPowerMode(), 320); // 🔊 變身音效（延遲播放）
                         }
                         
                         await playerRef.update(updates);
@@ -781,15 +1009,19 @@
                         otherScoreChange = -stolen;
                         showScoreFloating(myX, myY, `+${stolen}`, '#00FF00');
                         showScoreFloating(otherPlayer.x, otherPlayer.y, `-${stolen}`, '#FF0000');
+                        soundCollision(); // 🔊 碰撞音效
+                        if (stolen > 0) soundScore(); // 🔊 得分音效
                     } else if (!myPowerMode && otherPowerMode) {
                         // 對方在 power mode，我不在：被搶 50%
                         const stolen = Math.floor((myPlayer.score || 0) * 0.5);
                         myScoreChange = -stolen;
                         otherScoreChange = stolen;
                         showScoreFloating(myX, myY, `-${stolen}`, '#FF0000');
+                        soundCollision(); // 🔊 碰撞音效
                     } else if (myPowerMode && otherPowerMode) {
                         // 雙方都在 power mode：彈開，不搶分
                         console.log('Both in power mode - bounce!');
+                        soundCollision(); // 🔊 碰撞音效
                         return;
                     } else {
                         // 雙方都不在 power mode：分數高者搶 20%
@@ -802,13 +1034,18 @@
                             otherScoreChange = -stolen;
                             showScoreFloating(myX, myY, `+${stolen}`, '#00FF00');
                             showScoreFloating(otherPlayer.x, otherPlayer.y, `-${stolen}`, '#FF0000');
+                            soundCollision(); // 🔊 碰撞音效
+                            if (stolen > 0) soundScore(); // 🔊 得分音效
                         } else if (otherScore > myScore) {
                             const stolen = Math.floor(myScore * 0.2);
                             myScoreChange = -stolen;
                             otherScoreChange = stolen;
                             showScoreFloating(myX, myY, `-${stolen}`, '#FF0000');
+                            soundCollision(); // 🔊 碰撞音效
+                        } else {
+                            // 分數相等：只有碰撞音效
+                            soundCollision(); // 🔊 碰撞音效
                         }
-                        // 分數相等則不搶
                     }
 
                     // 更新分數（確保不會變成負數）
@@ -840,6 +1077,10 @@
                 createdAt: Date.now()
             });
         }
+
+        // 音效控制變量
+        let lastTickSecond = -1;
+        let powerWarningPlayed = {}; // 追蹤每個玩家是否已播放警告音
 
         // 更新遊戲狀態
         function updateGameState(data) {
@@ -880,7 +1121,13 @@
                 return;
             }
 
-            // 檢查並清除過期的 power mode
+            // 🔊 最後30秒倒數音效（每秒一次）
+            if (isLastThirty && remainingSeconds !== lastTickSecond) {
+                lastTickSecond = remainingSeconds;
+                soundTick();
+            }
+
+            // 檢查並清除過期的 power mode + 警告音
             if (gameState.players && database) {
                 Object.entries(gameState.players).forEach(([id, player]) => {
                     if (player.powerMode && player.powerEndTime && now >= player.powerEndTime) {
@@ -889,6 +1136,15 @@
                             powerMode: false,
                             powerEndTime: null
                         });
+                        // 清除警告音標記
+                        delete powerWarningPlayed[id];
+                    } else if (player.powerMode && player.powerEndTime) {
+                        // 🔊 檢查是否需要播放警告音（最後5秒，且該玩家是自己）
+                        const timeLeft = (player.powerEndTime - now) / 1000;
+                        if (timeLeft <= 5 && timeLeft > 4.5 && id === currentPlayerId && !powerWarningPlayed[id]) {
+                            soundPowerWarning();
+                            powerWarningPlayed[id] = true;
+                        }
                     }
                 });
             }
@@ -1087,6 +1343,9 @@
         function showGameResults() {
             if (!gameState || !gameState.players) return;
 
+            // 🔊 遊戲結束音效
+            soundGameEnd();
+
             // 保存玩家數據後停止遊戲循環
             const finalPlayers = gameState.players;
             gameState = null;
@@ -1220,7 +1479,15 @@
             document.getElementById('startButton').addEventListener('click', startGame);
             document.getElementById('btnLeaveLobby').addEventListener('click', leaveRoom);
             document.getElementById('btnLeaveGame').addEventListener('click', leaveRoom);
-            
+
+            // 音效開關
+            document.getElementById('btnToggleSound').addEventListener('click', function() {
+                isSoundEnabled = !isSoundEnabled;
+                this.textContent = isSoundEnabled ? '🔊 音效：開啟' : '🔇 音效：關閉';
+                // 測試音效
+                if (isSoundEnabled) soundEatDot();
+            });
+
             // Enter 鍵支持
             document.getElementById('hostName').addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') createRoom();
