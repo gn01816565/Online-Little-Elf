@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>線上多人小精靈遊戲 (10人版)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 1200px;
+            width: 100%;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .menu-screen, .game-screen {
+            display: none;
+        }
+        
+        .menu-screen.active, .game-screen.active {
+            display: block;
+        }
+        
+        .menu-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-weight: bold;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .input-group {
+            margin: 20px 0;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: bold;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            font-size: 1.1em;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            outline: none;
+        }
+        
+        .input-group input:focus {
+            border-color: #764ba2;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+        }
+        
+        .room-code {
+            background: #f0f0f0;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .room-code h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .room-code .code {
+            font-size: 2em;
+            font-weight: bold;
+            color: #333;
+            letter-spacing: 5px;
+            font-family: monospace;
+        }
+        
+        .players-list {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .players-list h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .player-item {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .player-color-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        
+        .info-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .player-info {
+            padding: 10px 15px;
+            border-radius: 10px;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+            font-size: 0.9em;
+        }
+        
+        canvas {
+            display: block;
+            background: #000;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            margin: 0 auto;
+            max-width: 100%;
+        }
+        
+        .game-controls {
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        .status-message {
+            text-align: center;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+        
+        .status-message.info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .status-message.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-message.warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .back-button {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 線上多人小精靈 (最多10人) 🎮</h1>
+        
+        <!-- 主選單 -->
+        <div id="menuScreen" class="menu-screen active">
+            <div class="menu-buttons">
+                <button id="btnShowCreate">🎯 建立遊戲房間</button>
+                <button id="btnShowJoin">🚪 加入遊戲房間</button>
+            </div>
+            
+            <div id="createRoomSection" style="display: none;">
+                <div class="input-group">
+                    <label>你的暱稱：</label>
+                    <input type="text" id="hostName" placeholder="輸入你的暱稱" maxlength="15">
+                </div>
+                <button id="btnCreateRoom">建立房間</button>
+                <button class="back-button" id="btnBackFromCreate">返回</button>
+            </div>
+            
+            <div id="joinRoomSection" style="display: none;">
+                <div class="input-group">
+                    <label>你的暱稱：</label>
+                    <input type="text" id="playerName" placeholder="輸入你的暱稱" maxlength="15">
+                </div>
+                <div class="input-group">
+                    <label>房間代碼：</label>
+                    <input type="text" id="roomCode" placeholder="輸入6位數房間代碼" maxlength="6">
+                </div>
+                <button id="btnJoinRoom">加入房間</button>
+                <button class="back-button" id="btnBackFromJoin">返回</button>
+            </div>
+        </div>
+        
+        <!-- 等待室 -->
+        <div id="lobbyScreen" class="menu-screen">
+            <div class="room-code">
+                <h3>房間代碼</h3>
+                <div class="code" id="displayRoomCode"></div>
+                <p style="margin-top: 10px; color: #666;">分享此代碼給朋友加入遊戲</p>
+            </div>
+            
+            <div class="players-list">
+                <h3>已加入玩家 (<span id="playerCount">0</span>/10)</h3>
+                <div id="playersList"></div>
+            </div>
+            
+            <div class="status-message info">
+                等待其他玩家加入... (至少需要2位玩家)
+            </div>
+            
+            <button id="startButton" disabled>開始遊戲</button>
+            <button class="back-button" id="btnLeaveLobby">離開房間</button>
+        </div>
+        
+        <!-- 遊戲畫面 -->
+        <div id="gameScreen" class="game-screen">
+            <div class="info-panel" id="gameInfoPanel"></div>
+            
+            <canvas id="gameCanvas" width="1000" height="800"></canvas>
+            
+            <div class="game-controls">
+                <p style="margin-bottom: 10px; color: #666;">
+                    使用方向鍵 ↑ ↓ ← → 或 W A S D 移動
+                </p>
+                <button class="back-button" id="btnLeaveGame">離開遊戲</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    
+    <script>
+        // Firebase 配置 - 請替換為你自己的配置
+        const firebaseConfig = {
+            apiKey: "AIzaSyBexampleKey123456789",
+            authDomain: "your-project.firebaseapp.com",
+            databaseURL: "https://your-project-default-rtdb.firebaseio.com",
+            projectId: "your-project",
+            storageBucket: "your-project.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123456789:web:abcdef123456"
+        };
+
+        // 初始化 Firebase
+        let database;
+        let isDemo = false;
+        try {
+            firebase.initializeApp(firebaseConfig);
+            database = firebase.database();
+            console.log('Firebase initialized successfully');
+        } catch (error) {
+            console.log('Firebase 配置錯誤 - 使用演示模式', error);
+            isDemo = true;
+            // 不顯示 alert，讓測試繼續
+        }
+
+        // 10種不同顏色
+        const playerColors = [
+            '#FFD700',  // 金黃色
+            '#FF69B4',  // 粉紅色
+            '#00CED1',  // 青藍色
+            '#32CD32',  // 綠色
+            '#FF6347',  // 番茄紅
+            '#9370DB',  // 紫色
+            '#FFA500',  // 橙色
+            '#00FA9A',  // 中綠色
+            '#FF1493',  // 深粉色
+            '#4169E1'   // 皇家藍
+        ];
+        
+        // 遊戲狀態
+        let currentRoomId = null;
+        let currentPlayerId = null;
+        let isHost = false;
+        let gameState = null;
+        
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const CELL_SIZE = 20;
+        const COLS = canvas.width / CELL_SIZE;
+        const ROWS = canvas.height / CELL_SIZE;
+        
+        // 10個不同的起始位置
+        const startPositions = [
+            { x: 2, y: 2 },
+            { x: COLS - 3, y: 2 },
+            { x: 2, y: ROWS - 3 },
+            { x: COLS - 3, y: ROWS - 3 },
+            { x: Math.floor(COLS / 2), y: 2 },
+            { x: Math.floor(COLS / 2), y: ROWS - 3 },
+            { x: 2, y: Math.floor(ROWS / 2) },
+            { x: COLS - 3, y: Math.floor(ROWS / 2) },
+            { x: Math.floor(COLS / 4), y: Math.floor(ROWS / 4) },
+            { x: Math.floor(COLS * 3 / 4), y: Math.floor(ROWS * 3 / 4) }
+        ];
+        
+        // 生成房間代碼
+        function generateRoomCode() {
+            return Math.random().toString(36).substring(2, 8).toUpperCase();
+        }
+        
+        // 顯示建立房間界面
+        function showCreateRoom() {
+            console.log('showCreateRoom called');
+            document.querySelectorAll('.menu-buttons > button').forEach(b => b.style.display = 'none');
+            document.getElementById('createRoomSection').style.display = 'block';
+        }
+        
+        // 顯示加入房間界面
+        function showJoinRoom() {
+            console.log('showJoinRoom called');
+            document.querySelectorAll('.menu-buttons > button').forEach(b => b.style.display = 'none');
+            document.getElementById('joinRoomSection').style.display = 'block';
+        }
+        
+        // 返回主選單
+        function backToMenu() {
+            document.getElementById('createRoomSection').style.display = 'none';
+            document.getElementById('joinRoomSection').style.display = 'none';
+            document.querySelectorAll('.menu-buttons > button').forEach(b => b.style.display = 'block');
+        }
+        
+        // 建立房間
+        async function createRoom() {
+            console.log('createRoom function called');
+            const hostName = document.getElementById('hostName').value.trim();
+            console.log('Host name:', hostName);
+            
+            if (!hostName) {
+                alert('請輸入你的暱稱');
+                return;
+            }
+            
+            console.log('Database status:', database ? 'Available' : 'Not available');
+            
+            if (!database) {
+                alert('Firebase 未正確配置，無法建立房間');
+                return;
+            }
+            
+            console.log('Creating room...');
+            
+            const roomCode = generateRoomCode();
+            currentRoomId = roomCode;
+            currentPlayerId = 'player_' + Date.now();
+            isHost = true;
+            
+            // 演示模式 - 直接切換到等待室
+            if (isDemo) {
+                console.log('Demo mode - switching to lobby');
+                alert('⚠️ 演示模式\n\nFirebase 未配置，無法真正建立線上房間。\n這只是界面演示。\n\n要啟用真正的多人連線，請依照 README 配置 Firebase。');
+                document.getElementById('menuScreen').classList.remove('active');
+                document.getElementById('lobbyScreen').classList.add('active');
+                document.getElementById('displayRoomCode').textContent = roomCode;
+                document.getElementById('playerCount').textContent = '1';
+                document.getElementById('playersList').innerHTML = `
+                    <div class="player-item" style="background: ${playerColors[0]}20; border: 2px solid ${playerColors[0]}">
+                        <div class="player-color-dot" style="background: ${playerColors[0]}"></div>
+                        <span style="color: #333">${hostName} (你)</span>
+                    </div>
+                `;
+                return;
+            }
+            
+            const roomRef = database.ref(`rooms/${roomCode}`);
+            const playerRef = database.ref(`rooms/${roomCode}/players/${currentPlayerId}`);
+            
+            // 建立房間資料
+            await roomRef.set({
+                code: roomCode,
+                status: 'waiting',
+                createdAt: Date.now(),
+                host: currentPlayerId,
+                maxPlayers: 10
+            });
+            
+            // 加入玩家
+            const pos = startPositions[0];
+            await playerRef.set({
+                name: hostName,
+                color: playerColors[0],
+                score: 0,
+                x: pos.x,
+                y: pos.y,
+                joinedAt: Date.now()
+            });
+            
+            // 設定斷線處理
+            playerRef.onDisconnect().remove();
+            
+            // 監聽房間變化
+            listenToRoom();
+            
+            // 切換到等待室
+            document.getElementById('menuScreen').classList.remove('active');
+            document.getElementById('lobbyScreen').classList.add('active');
+            document.getElementById('displayRoomCode').textContent = roomCode;
+        }
+        
+        // 加入房間
+        async function joinRoom() {
+            console.log('joinRoom function called');
+            const playerName = document.getElementById('playerName').value.trim();
+            const roomCode = document.getElementById('roomCode').value.trim().toUpperCase();
+            
+            console.log('Player name:', playerName);
+            console.log('Room code:', roomCode);
+            
+            if (!playerName) {
+                alert('請輸入你的暱稱');
+                return;
+            }
+            
+            if (!roomCode || roomCode.length !== 6) {
+                alert('請輸入正確的6位數房間代碼');
+                return;
+            }
+            
+            if (isDemo) {
+                alert('⚠️ 演示模式\n\nFirebase 未配置，無法加入線上房間。\n\n要啟用真正的多人連線，請依照 README 配置 Firebase。');
+                return;
+            }
+            
+            console.log('Database status:', database ? 'Available' : 'Not available');
+            
+            if (!database) {
+                alert('Firebase 未正確配置，無法加入房間');
+                return;
+            }
+            
+            // 檢查房間是否存在
+            const roomRef = database.ref(`rooms/${roomCode}`);
+            const snapshot = await roomRef.once('value');
+            
+            if (!snapshot.exists()) {
+                alert('房間不存在，請檢查房間代碼');
+                return;
+            }
+            
+            const roomData = snapshot.val();
+            const playerCount = roomData.players ? Object.keys(roomData.players).length : 0;
+            
+            if (playerCount >= 10) {
+                alert('房間已滿 (最多10位玩家)');
+                return;
+            }
+            
+            if (roomData.status === 'playing') {
+                alert('遊戲已經開始，無法加入');
+                return;
+            }
+            
+            currentRoomId = roomCode;
+            currentPlayerId = 'player_' + Date.now();
+            
+            const playerRef = database.ref(`rooms/${roomCode}/players/${currentPlayerId}`);
+            
+            // 加入玩家
+            const pos = startPositions[playerCount];
+            await playerRef.set({
+                name: playerName,
+                color: playerColors[playerCount],
+                score: 0,
+                x: pos.x,
+                y: pos.y,
+                joinedAt: Date.now()
+            });
+            
+            // 設定斷線處理
+            playerRef.onDisconnect().remove();
+            
+            // 監聽房間變化
+            listenToRoom();
+            
+            // 切換到等待室
+            document.getElementById('menuScreen').classList.remove('active');
+            document.getElementById('lobbyScreen').classList.add('active');
+            document.getElementById('displayRoomCode').textContent = roomCode;
+        }
+        
+        // 監聽房間變化
+        function listenToRoom() {
+            const roomRef = database.ref(`rooms/${currentRoomId}`);
+            
+            roomRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                
+                if (!data) {
+                    alert('房間已關閉');
+                    window.location.reload();
+                    return;
+                }
+                
+                // 更新玩家列表
+                updatePlayersList(data.players || {});
+                
+                // 檢查是否可以開始遊戲
+                const playerCount = Object.keys(data.players || {}).length;
+                const startButton = document.getElementById('startButton');
+                if (isHost && playerCount >= 2) {
+                    startButton.disabled = false;
+                }
+                
+                // 如果遊戲開始，切換到遊戲畫面
+                if (data.status === 'playing' && !gameState) {
+                    initGame(data);
+                } else if (data.status === 'playing' && gameState) {
+                    updateGameState(data);
+                }
+            });
+        }
+        
+        // 更新玩家列表
+        function updatePlayersList(players) {
+            const playersList = document.getElementById('playersList');
+            const playerCount = document.getElementById('playerCount');
+            
+            playerCount.textContent = Object.keys(players).length;
+            playersList.innerHTML = '';
+            
+            Object.entries(players).forEach(([id, player]) => {
+                const div = document.createElement('div');
+                div.className = 'player-item';
+                div.style.background = player.color + '20';
+                div.style.border = `2px solid ${player.color}`;
+                
+                const dot = document.createElement('div');
+                dot.className = 'player-color-dot';
+                dot.style.background = player.color;
+                
+                const name = document.createElement('span');
+                name.textContent = `${player.name} ${id === currentPlayerId ? '(你)' : ''}`;
+                name.style.color = '#333';
+                
+                div.appendChild(dot);
+                div.appendChild(name);
+                playersList.appendChild(div);
+            });
+        }
+        
+        // 開始遊戲
+        async function startGame() {
+            if (!isHost) return;
+            
+            const roomRef = database.ref(`rooms/${currentRoomId}`);
+            const snapshot = await roomRef.once('value');
+            const roomData = snapshot.val();
+            
+            // 生成迷宮
+            const maze = generateMaze();
+            
+            // 更新房間狀態
+            await roomRef.update({
+                status: 'playing',
+                maze: maze,
+                startedAt: Date.now()
+            });
+        }
+        
+        // 生成迷宮
+        function generateMaze() {
+            const maze = [];
+            for (let y = 0; y < ROWS; y++) {
+                maze[y] = [];
+                for (let x = 0; x < COLS; x++) {
+                    if (x === 0 || x === COLS - 1 || y === 0 || y === ROWS - 1) {
+                        maze[y][x] = 1;
+                    } else if (Math.random() < 0.12 && (x % 3 === 0 && y % 3 === 0)) {
+                        maze[y][x] = 1;
+                    } else if (Math.random() < 0.04) {
+                        maze[y][x] = 3;
+                    } else if (Math.random() < 0.65) {
+                        maze[y][x] = 2;
+                    } else {
+                        maze[y][x] = 0;
+                    }
+                }
+            }
+            
+            // 確保起始位置周圍沒有牆
+            startPositions.forEach(pos => {
+                for (let dy = -2; dy <= 2; dy++) {
+                    for (let dx = -2; dx <= 2; dx++) {
+                        const ny = pos.y + dy;
+                        const nx = pos.x + dx;
+                        if (ny >= 0 && ny < ROWS && nx >= 0 && nx < COLS) {
+                            if (maze[ny][nx] === 1) maze[ny][nx] = 0;
+                        }
+                    }
+                }
+            });
+            
+            return maze;
+        }
+        
+        // 初始化遊戲
+        function initGame(data) {
+            gameState = data;
+            
+            document.getElementById('lobbyScreen').classList.remove('active');
+            document.getElementById('gameScreen').classList.add('active');
+            
+            // 更新玩家資訊面板
+            updateInfoPanel(data.players);
+            
+            // 開始遊戲循環
+            gameLoop();
+            
+            // 監聽鍵盤
+            setupKeyboardControls();
+        }
+        
+        // 更新玩家資訊面板
+        function updateInfoPanel(players) {
+            const panel = document.getElementById('gameInfoPanel');
+            panel.innerHTML = '';
+            
+            Object.entries(players).forEach(([id, player]) => {
+                const div = document.createElement('div');
+                div.className = 'player-info';
+                div.style.background = `linear-gradient(135deg, ${player.color} 0%, ${player.color}CC 100%)`;
+                div.innerHTML = `
+                    <div style="font-size: 0.85em;">${player.name}${id === currentPlayerId ? ' (你)' : ''}</div>
+                    <div>分數: <span id="score-${id}">${player.score || 0}</span></div>
+                `;
+                panel.appendChild(div);
+            });
+        }
+        
+        // 設定鍵盤控制
+        function setupKeyboardControls() {
+            let lastMoveTime = 0;
+            const moveDelay = 120;
+            
+            document.addEventListener('keydown', async (e) => {
+                if (!gameState || Date.now() - lastMoveTime < moveDelay) return;
+                
+                const playerRef = database.ref(`rooms/${currentRoomId}/players/${currentPlayerId}`);
+                const snapshot = await playerRef.once('value');
+                const player = snapshot.val();
+                
+                if (!player) return;
+                
+                let newX = player.x;
+                let newY = player.y;
+                
+                if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
+                    newY--;
+                } else if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
+                    newY++;
+                } else if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+                    newX--;
+                } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+                    newX++;
+                } else {
+                    return;
+                }
+                
+                e.preventDefault();
+                
+                // 檢查碰撞
+                if (newX >= 0 && newX < COLS && newY >= 0 && newY < ROWS) {
+                    if (gameState.maze[newY][newX] !== 1) {
+                        lastMoveTime = Date.now();
+                        
+                        const updates = {
+                            x: newX,
+                            y: newY
+                        };
+                        
+                        // 檢查是否吃到豆子
+                        if (gameState.maze[newY][newX] === 2) {
+                            updates.score = (player.score || 0) + 10;
+                            await database.ref(`rooms/${currentRoomId}/maze/${newY}/${newX}`).set(0);
+                        } else if (gameState.maze[newY][newX] === 3) {
+                            updates.score = (player.score || 0) + 50;
+                            await database.ref(`rooms/${currentRoomId}/maze/${newY}/${newX}`).set(0);
+                        }
+                        
+                        await playerRef.update(updates);
+                    }
+                }
+            });
+        }
+        
+        // 更新遊戲狀態
+        function updateGameState(data) {
+            gameState = data;
+            
+            // 更新分數顯示
+            if (data.players) {
+                Object.entries(data.players).forEach(([id, player]) => {
+                    const scoreEl = document.getElementById(`score-${id}`);
+                    if (scoreEl) {
+                        scoreEl.textContent = player.score || 0;
+                    }
+                });
+            }
+        }
+        
+        // 遊戲循環
+        function gameLoop() {
+            if (!gameState) return;
+            
+            // 清空畫布
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // 繪製迷宮
+            if (gameState.maze) {
+                for (let y = 0; y < ROWS; y++) {
+                    for (let x = 0; x < COLS; x++) {
+                        if (gameState.maze[y][x] === 1) {
+                            ctx.fillStyle = '#0000FF';
+                            ctx.fillRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+                            ctx.strokeStyle = '#4169E1';
+                            ctx.strokeRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+                        } else if (gameState.maze[y][x] === 2) {
+                            ctx.fillStyle = '#FFF';
+                            ctx.beginPath();
+                            ctx.arc(x * CELL_SIZE + CELL_SIZE / 2, y * CELL_SIZE + CELL_SIZE / 2, 3, 0, Math.PI * 2);
+                            ctx.fill();
+                        } else if (gameState.maze[y][x] === 3) {
+                            ctx.fillStyle = '#FFD700';
+                            ctx.beginPath();
+                            ctx.arc(x * CELL_SIZE + CELL_SIZE / 2, y * CELL_SIZE + CELL_SIZE / 2, 6, 0, Math.PI * 2);
+                            ctx.fill();
+                            ctx.strokeStyle = '#FFA500';
+                            ctx.lineWidth = 2;
+                            ctx.stroke();
+                        }
+                    }
+                }
+            }
+            
+            // 繪製玩家
+            if (gameState.players) {
+                Object.entries(gameState.players).forEach(([id, player]) => {
+                    ctx.fillStyle = player.color;
+                    ctx.beginPath();
+                    ctx.arc(
+                        player.x * CELL_SIZE + CELL_SIZE / 2,
+                        player.y * CELL_SIZE + CELL_SIZE / 2,
+                        CELL_SIZE / 2 - 2, 0, Math.PI * 2
+                    );
+                    ctx.fill();
+                    
+                    // 眼睛
+                    ctx.fillStyle = '#000';
+                    ctx.beginPath();
+                    ctx.arc(player.x * CELL_SIZE + CELL_SIZE / 2 - 3, player.y * CELL_SIZE + CELL_SIZE / 2 - 2, 2, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(player.x * CELL_SIZE + CELL_SIZE / 2 + 3, player.y * CELL_SIZE + CELL_SIZE / 2 - 2, 2, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // 名字
+                    ctx.fillStyle = player.color;
+                    ctx.font = 'bold 9px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.strokeStyle = '#000';
+                    ctx.lineWidth = 2;
+                    ctx.strokeText(player.name, player.x * CELL_SIZE + CELL_SIZE / 2, player.y * CELL_SIZE - 5);
+                    ctx.fillText(player.name, player.x * CELL_SIZE + CELL_SIZE / 2, player.y * CELL_SIZE - 5);
+                });
+            }
+            
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // 離開房間
+        async function leaveRoom() {
+            if (currentRoomId && currentPlayerId && database) {
+                const playerRef = database.ref(`rooms/${currentRoomId}/players/${currentPlayerId}`);
+                await playerRef.remove();
+            }
+            window.location.reload();
+        }
+        
+        // 頁面載入後設定事件監聽器
+        window.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, setting up event listeners');
+            
+            const btnShowCreate = document.getElementById('btnShowCreate');
+            const btnShowJoin = document.getElementById('btnShowJoin');
+            const btnCreateRoom = document.getElementById('btnCreateRoom');
+            const btnJoinRoom = document.getElementById('btnJoinRoom');
+            
+            console.log('Button elements:', {
+                btnShowCreate: btnShowCreate ? 'Found' : 'Not found',
+                btnShowJoin: btnShowJoin ? 'Found' : 'Not found',
+                btnCreateRoom: btnCreateRoom ? 'Found' : 'Not found',
+                btnJoinRoom: btnJoinRoom ? 'Found' : 'Not found'
+            });
+            
+            btnShowCreate.addEventListener('click', function() {
+                console.log('btnShowCreate clicked');
+                showCreateRoom();
+            });
+            btnShowJoin.addEventListener('click', function() {
+                console.log('btnShowJoin clicked');
+                showJoinRoom();
+            });
+            btnCreateRoom.addEventListener('click', function() {
+                console.log('btnCreateRoom clicked');
+                createRoom();
+            });
+            btnJoinRoom.addEventListener('click', function() {
+                console.log('btnJoinRoom clicked');
+                joinRoom();
+            });
+            document.getElementById('btnBackFromCreate').addEventListener('click', backToMenu);
+            document.getElementById('btnBackFromJoin').addEventListener('click', backToMenu);
+            document.getElementById('startButton').addEventListener('click', startGame);
+            document.getElementById('btnLeaveLobby').addEventListener('click', leaveRoom);
+            document.getElementById('btnLeaveGame').addEventListener('click', leaveRoom);
+            
+            // Enter 鍵支持
+            document.getElementById('hostName').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') createRoom();
+            });
+            document.getElementById('playerName').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') joinRoom();
+            });
+            document.getElementById('roomCode').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') joinRoom();
+            });
+            
+            console.log('Event listeners set up successfully');
+        });
+    </script>
+</body>
+</html>
