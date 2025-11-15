@@ -1333,6 +1333,128 @@
                 ctx.restore();
             }
 
+            // 🏆 繪製即時排名（右上角）
+            if (gameState.players) {
+                // 計算排名
+                const rankings = Object.entries(gameState.players)
+                    .map(([id, player]) => ({
+                        id,
+                        name: player.name,
+                        color: player.color,
+                        score: player.score || 0
+                    }))
+                    .sort((a, b) => b.score - a.score);
+
+                // 找到自己的排名
+                const myRank = rankings.findIndex(p => p.id === currentPlayerId);
+                const isInTop3 = myRank < 3;
+
+                // 背景框
+                const boxX = canvas.width - 220;
+                const boxY = 95;
+                const boxWidth = 210;
+                const boxHeight = isInTop3 ? 145 : 200; // 如果不在前3，多顯示自己
+
+                ctx.save();
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+                ctx.fillRect(boxX, boxY, boxWidth, boxHeight);
+                ctx.strokeStyle = '#FFD700';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(boxX, boxY, boxWidth, boxHeight);
+
+                // 標題
+                ctx.font = 'bold 20px Arial';
+                ctx.textAlign = 'left';
+                ctx.fillStyle = '#FFD700';
+                ctx.fillText('🏆 排名', boxX + 10, boxY + 28);
+
+                // 顯示前3名
+                let yPos = boxY + 60;
+                const topPlayers = rankings.slice(0, 3);
+
+                topPlayers.forEach((player, index) => {
+                    const isMe = player.id === currentPlayerId;
+                    const rank = index + 1;
+
+                    // 高亮自己
+                    if (isMe) {
+                        ctx.fillStyle = 'rgba(255, 215, 0, 0.2)';
+                        ctx.fillRect(boxX + 5, yPos - 20, boxWidth - 10, 28);
+                    }
+
+                    // 排名
+                    ctx.font = 'bold 16px Arial';
+                    ctx.textAlign = 'left';
+                    ctx.fillStyle = rank === 1 ? '#FFD700' : rank === 2 ? '#C0C0C0' : '#CD7F32';
+                    ctx.fillText(`#${rank}`, boxX + 15, yPos);
+
+                    // 玩家顏色點
+                    ctx.fillStyle = player.color;
+                    ctx.beginPath();
+                    ctx.arc(boxX + 50, yPos - 5, 6, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // 玩家名字
+                    ctx.font = 'bold 14px Arial';
+                    ctx.fillStyle = '#FFF';
+                    ctx.textAlign = 'left';
+                    const displayName = player.name.length > 8 ? player.name.substring(0, 7) + '...' : player.name;
+                    ctx.fillText(displayName + (isMe ? ' (你)' : ''), boxX + 62, yPos);
+
+                    // 分數
+                    ctx.textAlign = 'right';
+                    ctx.fillStyle = '#FFD700';
+                    ctx.fillText(player.score.toString(), boxX + boxWidth - 15, yPos);
+
+                    yPos += 30;
+                });
+
+                // 如果自己不在前3，顯示分隔線 + 自己的排名
+                if (!isInTop3 && myRank >= 0) {
+                    // 分隔線
+                    ctx.strokeStyle = '#666';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(boxX + 10, yPos + 5);
+                    ctx.lineTo(boxX + boxWidth - 10, yPos + 5);
+                    ctx.stroke();
+
+                    yPos += 25;
+
+                    const myPlayer = rankings[myRank];
+
+                    // 高亮背景
+                    ctx.fillStyle = 'rgba(255, 215, 0, 0.3)';
+                    ctx.fillRect(boxX + 5, yPos - 20, boxWidth - 10, 28);
+
+                    // 我的排名
+                    ctx.font = 'bold 16px Arial';
+                    ctx.textAlign = 'left';
+                    ctx.fillStyle = '#FFD700';
+                    ctx.fillText(`#${myRank + 1}`, boxX + 15, yPos);
+
+                    // 玩家顏色點
+                    ctx.fillStyle = myPlayer.color;
+                    ctx.beginPath();
+                    ctx.arc(boxX + 50, yPos - 5, 6, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // 玩家名字
+                    ctx.font = 'bold 14px Arial';
+                    ctx.fillStyle = '#FFF';
+                    ctx.textAlign = 'left';
+                    const displayName = myPlayer.name.length > 8 ? myPlayer.name.substring(0, 7) + '...' : myPlayer.name;
+                    ctx.fillText(displayName + ' (你)', boxX + 62, yPos);
+
+                    // 分數
+                    ctx.textAlign = 'right';
+                    ctx.fillStyle = '#FFD700';
+                    ctx.fillText(myPlayer.score.toString(), boxX + boxWidth - 15, yPos);
+                }
+
+                ctx.restore();
+            }
+
             // 繪製分數飄字動畫
             floatingTexts = floatingTexts.filter(ft => {
                 const elapsed = now - ft.createdAt;
