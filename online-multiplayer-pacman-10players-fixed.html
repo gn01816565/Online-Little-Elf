@@ -395,6 +395,7 @@
                 alertEnterNickname: '請輸入你的暱稱',
                 alertFirebaseNotConfigured: 'Firebase 未正確配置，無法建立房間',
                 alertDemoModeCreate: '⚠️ 演示模式\n\nFirebase 未配置，無法真正建立線上房間。\n這只是界面演示。\n\n要啟用真正的多人連線，請依照 README 配置 Firebase。',
+                alertDemoMode: '⚠️ 演示模式\n\nFirebase 未配置，無法啟動遊戲。\n這只是界面演示。\n\n要啟用真正的多人連線，請依照 README 配置 Firebase。',
                 alertDemoModeJoin: '⚠️ 演示模式\n\nFirebase 未配置，無法加入線上房間。\n\n要啟用真正的多人連線，請依照 README 配置 Firebase。',
                 alertFirebaseNotConfiguredJoin: 'Firebase 未正確配置，無法加入房間',
                 alertRoomNotFound: '房間不存在，請檢查房間代碼',
@@ -454,6 +455,7 @@
                 alertEnterNickname: 'Please enter your nickname',
                 alertFirebaseNotConfigured: 'Firebase is not properly configured, cannot create room',
                 alertDemoModeCreate: '⚠️ Demo Mode\n\nFirebase is not configured, cannot create online room.\nThis is just a UI demo.\n\nTo enable real multiplayer, please configure Firebase according to the README.',
+                alertDemoMode: '⚠️ Demo Mode\n\nFirebase is not configured, cannot start game.\nThis is just a UI demo.\n\nTo enable real multiplayer, please configure Firebase according to the README.',
                 alertDemoModeJoin: '⚠️ Demo Mode\n\nFirebase is not configured, cannot join online room.\n\nTo enable real multiplayer, please configure Firebase according to the README.',
                 alertFirebaseNotConfiguredJoin: 'Firebase is not properly configured, cannot join room',
                 alertRoomNotFound: 'Room does not exist, please check the room code',
@@ -1056,54 +1058,96 @@
         // 開始遊戲
         async function startGame() {
             if (!isHost) return;
-            
-            const roomRef = database.ref(`rooms/${currentRoomId}`);
-            const snapshot = await roomRef.once('value');
-            const roomData = snapshot.val();
-            
-            // 生成迷宮
-            const maze = generateMaze();
-            
-            // 更新房間狀態
-            await roomRef.update({
-                status: 'playing',
-                maze: maze,
-                startedAt: Date.now()
-            });
+
+            // 🔧 演示模式檢查
+            if (isDemo) {
+                alert(t('alertDemoMode') || '⚠️ 演示模式\n\n無法啟動遊戲，因為 Firebase 未配置。\n請依照 README 設定 Firebase 以啟用真正的多人連線。');
+                return;
+            }
+
+            if (!database) {
+                alert(t('alertFirebaseNotConfigured'));
+                return;
+            }
+
+            try {
+                const roomRef = database.ref(`rooms/${currentRoomId}`);
+                const snapshot = await roomRef.once('value');
+                const roomData = snapshot.val();
+
+                if (!roomData) {
+                    alert(t('alertRoomNotFound'));
+                    return;
+                }
+
+                // 生成迷宮
+                const maze = generateMaze();
+
+                // 更新房間狀態
+                await roomRef.update({
+                    status: 'playing',
+                    maze: maze,
+                    startedAt: Date.now()
+                });
+
+                console.log('Game started successfully');
+            } catch (error) {
+                console.error('Error starting game:', error);
+                alert('啟動遊戲時發生錯誤：' + error.message);
+            }
         }
         
-        // 生成迷宮
+        /**
+         * 生成遊戲迷宮
+         * @returns {Array<Array<number>>} 迷宮二維陣列
+         *
+         * 地圖元素：
+         * - 0: 空地
+         * - 1: 牆壁
+         * - 2: 小豆子（+10 分）
+         * - 3: 能量豆（+50 分）
+         *
+         * 生成邏輯：
+         * 1. 建立邊界牆（地圖四周）
+         * 2. 隨機生成內部牆壁（12% 概率，只在 3的倍數座標）
+         * 3. 放置小豆子（65% 概率）
+         * 4. 清空玩家起始位置周圍區域（5x5）
+         * 5. 固定放置 4 個能量豆在地圖四角
+         * 6. 清空能量豆周圍區域（3x3）
+         */
         function generateMaze() {
             const maze = [];
+
+            // 步驟 1-3：生成基本地圖（牆壁、小豆子、空地）
             for (let y = 0; y < ROWS; y++) {
                 maze[y] = [];
                 for (let x = 0; x < COLS; x++) {
                     if (x === 0 || x === COLS - 1 || y === 0 || y === ROWS - 1) {
                         maze[y][x] = 1; // 邊界牆
                     } else if (Math.random() < 0.12 && (x % 3 === 0 && y % 3 === 0)) {
-                        maze[y][x] = 1; // 內部牆壁
+                        maze[y][x] = 1; // 內部牆壁（12% 概率，網格狀分布）
                     } else if (Math.random() < 0.65) {
                         maze[y][x] = 2; // 小豆子（65% 概率）
                     } else {
-                        maze[y][x] = 0; // 空地
+                        maze[y][x] = 0; // 空地（35% 概率）
                     }
                 }
             }
 
-            // 確保起始位置周圍沒有牆
+            // 步驟 4：清空玩家起始位置周圍（確保玩家可以移動）
             startPositions.forEach(pos => {
                 for (let dy = -2; dy <= 2; dy++) {
                     for (let dx = -2; dx <= 2; dx++) {
                         const ny = pos.y + dy;
                         const nx = pos.x + dx;
                         if (ny >= 0 && ny < ROWS && nx >= 0 && nx < COLS) {
-                            if (maze[ny][nx] === 1) maze[ny][nx] = 0;
+                            if (maze[ny][nx] === 1) maze[ny][nx] = 0; // 移除牆壁
                         }
                     }
                 }
             });
 
-            // 🎯 固定放置 4 個能量豆（地圖四角）
+            // 步驟 5-6：固定放置 4 個能量豆（地圖四角）
             const powerPelletPositions = [
                 { x: 5, y: 5 },                    // 左上角
                 { x: COLS - 6, y: 5 },             // 右上角
@@ -1112,7 +1156,7 @@
             ];
 
             powerPelletPositions.forEach(pos => {
-                // 清空能量豆周圍區域（3x3），確保可達
+                // 清空能量豆周圍區域（3x3），確保玩家可以接近
                 for (let dy = -1; dy <= 1; dy++) {
                     for (let dx = -1; dx <= 1; dx++) {
                         const ny = pos.y + dy;
@@ -1126,6 +1170,7 @@
                 maze[pos.y][pos.x] = 3;
             });
 
+            console.log('Maze generated successfully');
             return maze;
         }
         
@@ -1163,19 +1208,42 @@
             });
         }
         
-        // 設定鍵盤控制
+        /**
+         * 設定鍵盤控制
+         *
+         * 改進點：
+         * 1. 加入更好的錯誤處理
+         * 2. 防止重複監聽
+         * 3. 加入詳細日誌
+         */
+        let keyboardListenerAdded = false; // 防止重複添加監聽器
+
         function setupKeyboardControls() {
+            if (keyboardListenerAdded) {
+                console.log('Keyboard controls already set up');
+                return;
+            }
+
             let lastMoveTime = 0;
-            const moveDelay = 120;
-            
+            const moveDelay = 120; // 移動延遲（毫秒）
+
             document.addEventListener('keydown', async (e) => {
                 if (!gameState || Date.now() - lastMoveTime < moveDelay) return;
-                
-                const playerRef = database.ref(`rooms/${currentRoomId}/players/${currentPlayerId}`);
-                const snapshot = await playerRef.once('value');
-                const player = snapshot.val();
-                
-                if (!player) return;
+
+                if (!database || !currentRoomId || !currentPlayerId) {
+                    console.warn('Cannot move: missing database, room, or player ID');
+                    return;
+                }
+
+                try {
+                    const playerRef = database.ref(`rooms/${currentRoomId}/players/${currentPlayerId}`);
+                    const snapshot = await playerRef.once('value');
+                    const player = snapshot.val();
+
+                    if (!player) {
+                        console.warn('Player data not found');
+                        return;
+                    }
                 
                 let newX = player.x;
                 let newY = player.y;
@@ -1192,45 +1260,64 @@
                     return;
                 }
                 
-                e.preventDefault();
-                
-                // 檢查碰撞
-                if (newX >= 0 && newX < COLS && newY >= 0 && newY < ROWS) {
-                    if (gameState.maze[newY][newX] !== 1) {
-                        lastMoveTime = Date.now();
-                        
-                        const updates = {
-                            x: newX,
-                            y: newY
-                        };
-                        
-                        // 檢查是否吃到豆子
-                        if (gameState.maze[newY][newX] === 2) {
-                            updates.score = (player.score || 0) + 10;
-                            await database.ref(`rooms/${currentRoomId}/maze/${newY}/${newX}`).set(0);
-                            soundEatDot(); // 🔊 吃豆子音效
-                        } else if (gameState.maze[newY][newX] === 3) {
-                            // 吃到能量豆：加分 + 進入 power mode
-                            updates.score = (player.score || 0) + 50;
-                            updates.powerMode = true;
-                            updates.powerEndTime = Date.now() + 15000; // 15秒 power mode
-                            await database.ref(`rooms/${currentRoomId}/maze/${newY}/${newX}`).set(0);
-                            soundEatPowerPellet(); // 🔊 吃能量豆音效
-                            setTimeout(() => soundPowerMode(), 320); // 🔊 變身音效（延遲播放）
-                        }
-                        
-                        await playerRef.update(updates);
+                    e.preventDefault();
 
-                        // 檢查碰撞（移動後）
-                        checkCollision(newX, newY);
+                    // 檢查邊界和碰撞
+                    if (newX >= 0 && newX < COLS && newY >= 0 && newY < ROWS) {
+                        if (gameState.maze[newY][newX] !== 1) {
+                            lastMoveTime = Date.now();
+
+                            const updates = {
+                                x: newX,
+                                y: newY
+                            };
+
+                            // 檢查是否吃到豆子
+                            if (gameState.maze[newY][newX] === 2) {
+                                updates.score = (player.score || 0) + 10;
+                                await database.ref(`rooms/${currentRoomId}/maze/${newY}/${newX}`).set(0);
+                                soundEatDot(); // 🔊 吃豆子音效
+                            } else if (gameState.maze[newY][newX] === 3) {
+                                // 吃到能量豆：加分 + 進入 power mode
+                                updates.score = (player.score || 0) + 50;
+                                updates.powerMode = true;
+                                updates.powerEndTime = Date.now() + 15000; // 15秒 power mode
+                                await database.ref(`rooms/${currentRoomId}/maze/${newY}/${newX}`).set(0);
+                                soundEatPowerPellet(); // 🔊 吃能量豆音效
+                                setTimeout(() => soundPowerMode(), 320); // 🔊 變身音效（延遲播放）
+                            }
+
+                            await playerRef.update(updates);
+
+                            // 檢查碰撞（移動後）
+                            checkCollision(newX, newY);
+                        }
                     }
+                } catch (error) {
+                    console.error('Error handling keyboard input:', error);
                 }
             });
+
+            keyboardListenerAdded = true;
+            console.log('Keyboard controls set up successfully');
         }
 
-        // 檢查玩家碰撞並執行搶分
+        // 🔧 碰撞冷卻追蹤（避免重複碰撞）
+        let lastCollisionTime = {};
+        const COLLISION_COOLDOWN = 1000; // 1秒碰撞冷卻
+
+        /**
+         * 檢查玩家碰撞並執行搶分
+         * @param {number} myX - 自己的 X 座標
+         * @param {number} myY - 自己的 Y 座標
+         *
+         * 改進點：
+         * 1. 加入碰撞冷卻（避免短時間內重複碰撞）
+         * 2. 只讓 ID 較小的玩家處理碰撞（避免雙方同時處理導致雙倍扣分）
+         * 3. 更好的錯誤處理
+         */
         async function checkCollision(myX, myY) {
-            if (!gameState || !gameState.players || !currentPlayerId) return;
+            if (!gameState || !gameState.players || !currentPlayerId || !database) return;
 
             const myPlayer = gameState.players[currentPlayerId];
             if (!myPlayer) return;
@@ -1242,9 +1329,20 @@
             for (const [otherId, otherPlayer] of Object.entries(gameState.players)) {
                 if (otherId === currentPlayerId) continue; // 跳過自己
 
+                // 🔧 檢查碰撞冷卻（避免短時間內重複處理）
+                const collisionKey = [currentPlayerId, otherId].sort().join('-');
+                if (lastCollisionTime[collisionKey] && now - lastCollisionTime[collisionKey] < COLLISION_COOLDOWN) {
+                    continue; // 還在冷卻中，跳過
+                }
+
                 // 檢查位置是否重疊（同一格或相鄰）
                 const distance = Math.abs(myX - otherPlayer.x) + Math.abs(myY - otherPlayer.y);
                 if (distance <= 1) { // 碰撞！
+                    // 🔧 只讓 ID 較小的玩家處理碰撞（避免雙方同時處理）
+                    if (currentPlayerId > otherId) {
+                        console.log('Collision detected but handled by other player');
+                        continue;
+                    }
                     const otherPowerMode = otherPlayer.powerMode && otherPlayer.powerEndTime && now < otherPlayer.powerEndTime;
 
                     let myScoreChange = 0;
@@ -1297,14 +1395,22 @@
                         }
                     }
 
+                    // 🔧 記錄碰撞時間（冷卻）
+                    lastCollisionTime[collisionKey] = now;
+
                     // 更新分數（確保不會變成負數）
-                    if (myScoreChange !== 0) {
-                        const newScore = Math.max(0, (myPlayer.score || 0) + myScoreChange);
-                        await database.ref(`rooms/${currentRoomId}/players/${currentPlayerId}/score`).set(newScore);
-                    }
-                    if (otherScoreChange !== 0) {
-                        const newOtherScore = Math.max(0, (otherPlayer.score || 0) + otherScoreChange);
-                        await database.ref(`rooms/${currentRoomId}/players/${otherId}/score`).set(newOtherScore);
+                    try {
+                        if (myScoreChange !== 0) {
+                            const newScore = Math.max(0, (myPlayer.score || 0) + myScoreChange);
+                            await database.ref(`rooms/${currentRoomId}/players/${currentPlayerId}/score`).set(newScore);
+                        }
+                        if (otherScoreChange !== 0) {
+                            const newOtherScore = Math.max(0, (otherPlayer.score || 0) + otherScoreChange);
+                            await database.ref(`rooms/${currentRoomId}/players/${otherId}/score`).set(newOtherScore);
+                        }
+                        console.log(`Collision processed: ${currentPlayerId} vs ${otherId}, scores: ${myScoreChange}, ${otherScoreChange}`);
+                    } catch (error) {
+                        console.error('Error updating scores after collision:', error);
                     }
 
                     break; // 只處理第一個碰撞
@@ -1376,15 +1482,20 @@
                 soundTick();
             }
 
-            // 檢查並清除過期的 power mode + 警告音
+            // 🔧 檢查並清除過期的 power mode（只清除自己的狀態，避免多次更新）
             if (gameState.players && database) {
                 Object.entries(gameState.players).forEach(([id, player]) => {
                     if (player.powerMode && player.powerEndTime && now >= player.powerEndTime) {
-                        // power mode 已過期，清除狀態
-                        database.ref(`rooms/${currentRoomId}/players/${id}`).update({
-                            powerMode: false,
-                            powerEndTime: null
-                        });
+                        // 🔧 只清除自己的 power mode 狀態（避免所有玩家都去清除導致多次更新）
+                        if (id === currentPlayerId) {
+                            database.ref(`rooms/${currentRoomId}/players/${id}`).update({
+                                powerMode: false,
+                                powerEndTime: null
+                            }).catch(error => {
+                                console.error('Error clearing power mode:', error);
+                            });
+                            console.log('Power mode expired, clearing status');
+                        }
                         // 清除警告音標記
                         delete powerWarningPlayed[id];
                     } else if (player.powerMode && player.powerEndTime) {
@@ -1710,7 +1821,13 @@
             requestAnimationFrame(gameLoop);
         }
         
-        // 顯示遊戲結算畫面
+        /**
+         * 顯示遊戲結算畫面
+         *
+         * 改進點：
+         * 1. 加入房間自動清理（20秒後刪除房間數據）
+         * 2. 更好的錯誤處理
+         */
         function showGameResults() {
             if (!gameState || !gameState.players) return;
 
@@ -1719,6 +1836,7 @@
 
             // 保存玩家數據後停止遊戲循環
             const finalPlayers = gameState.players;
+            const roomIdToClean = currentRoomId; // 保存房間 ID
             gameState = null;
 
             // 計算排名
@@ -1802,6 +1920,18 @@
             setTimeout(() => {
                 window.location.reload();
             }, 15000);
+
+            // 🔧 20秒後自動清理房間數據（只有 Host 執行）
+            if (isHost && database && roomIdToClean) {
+                setTimeout(async () => {
+                    try {
+                        await database.ref(`rooms/${roomIdToClean}`).remove();
+                        console.log(`Room ${roomIdToClean} cleaned up successfully`);
+                    } catch (error) {
+                        console.error('Error cleaning up room:', error);
+                    }
+                }, 20000); // 20秒後清理（給所有玩家足夠時間看結算）
+            }
         }
 
         // 離開房間
