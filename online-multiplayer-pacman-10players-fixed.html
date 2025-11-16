@@ -426,6 +426,8 @@
             <div class="menu-buttons">
                 <button id="btnShowCreate"><span id="textBtnCreate">🎯 建立遊戲房間</span></button>
                 <button id="btnShowJoin"><span id="textBtnJoin">🚪 加入遊戲房間</span></button>
+                <button id="btnSoloPractice" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);"><span id="textBtnSoloPractice">⚡ 單人練習</span></button>
+                <button id="btnHowToPlay" class="back-button"><span id="textBtnHowToPlay">❓ 如何遊玩</span></button>
             </div>
 
             <div id="createRoomSection" style="display: none;">
@@ -510,6 +512,88 @@
                 <button id="btnToggleSound" style="margin-bottom: 10px;"><span id="textSoundToggle">🔊 音效：開啟</span></button>
                 <button class="back-button" id="btnLeaveGame"><span id="textBtnLeaveGame">離開遊戲</span></button>
             </div>
+        </div>
+
+        <!-- ❓ 遊戲說明頁面 -->
+        <div id="howToPlayScreen" class="menu-screen" style="max-width: 800px;">
+            <h2 style="text-align: center; color: #667eea; margin-bottom: 20px;">
+                <span id="textHowToPlayTitle">📖 遊戲說明</span>
+            </h2>
+
+            <div style="text-align: left; padding: 20px; background: rgba(255,255,255,0.9); border-radius: 15px; margin-bottom: 20px;">
+                <!-- 基本規則 -->
+                <h3 style="color: #764ba2; margin-top: 0;">
+                    <span id="textBasicRulesTitle">🎯 基本規則</span>
+                </h3>
+                <ul style="line-height: 1.8; color: #333;">
+                    <li id="textRule1">🕐 遊戲時長：5 分鐘</li>
+                    <li id="textRule2">🎮 操作：方向鍵 ↑↓←→ 或 WASD</li>
+                    <li id="textRule3">🟡 小豆子：+10 分</li>
+                    <li id="textRule4">🔵 能量豆：+50 分 + 15 秒強化模式</li>
+                    <li id="textRule5">🏆 目標：遊戲結束時分數最高者獲勝</li>
+                </ul>
+
+                <!-- 搶分機制 -->
+                <h3 style="color: #764ba2; margin-top: 20px;">
+                    <span id="textScoreStealTitle">⚔️ 搶分機制</span>
+                </h3>
+                <div style="background: #f9f9f9; padding: 15px; border-radius: 10px; margin-bottom: 10px;">
+                    <p style="margin: 5px 0; color: #333;">
+                        <strong style="color: #667eea;">
+                            <span id="textNormalVsNormal">普通 vs 普通</span>
+                        </strong>:
+                        <span id="textNormalVsNormalDesc">分數高者搶走對方 20% 分數</span>
+                    </p>
+                    <p style="margin: 5px 0; color: #333;">
+                        <strong style="color: #ff6b6b;">
+                            <span id="textPowerVsNormal">能量豆 vs 普通</span>
+                        </strong>:
+                        <span id="textPowerVsNormalDesc">搶走對方 50% 分數 💥</span>
+                    </p>
+                    <p style="margin: 5px 0; color: #333;">
+                        <strong style="color: #ffa500;">
+                            <span id="textPowerVsPower">能量豆 vs 能量豆</span>
+                        </strong>:
+                        <span id="textPowerVsPowerDesc">彈開，不搶分</span>
+                    </p>
+                </div>
+
+                <!-- 能量豆效果 -->
+                <h3 style="color: #764ba2; margin-top: 20px;">
+                    <span id="textPowerPelletTitle">⚡ 能量豆效果</span>
+                </h3>
+                <ul style="line-height: 1.8; color: #333;">
+                    <li id="textPower1">🔵 吃到能量豆後，進入 15 秒強化模式</li>
+                    <li id="textPower2">💥 碰到普通玩家時，搶走 50% 分數（超強！）</li>
+                    <li id="textPower3">⚠️ 最後 5 秒會有警告音效</li>
+                    <li id="textPower4">🗺️ 地圖上固定有 4 個能量豆（四個角落）</li>
+                </ul>
+
+                <!-- 策略提示 -->
+                <h3 style="color: #764ba2; margin-top: 20px;">
+                    <span id="textStrategyTitle">💡 策略提示</span>
+                </h3>
+                <ul style="line-height: 1.8; color: #333;">
+                    <li id="textTip1">🎯 優先搶奪能量豆，可以快速逆轉分數</li>
+                    <li id="textTip2">🛡️ 分數領先時，避開有能量豆的玩家</li>
+                    <li id="textTip3">⚔️ 有能量豆時，主動追擊高分玩家</li>
+                    <li id="textTip4">🏃 被追擊時，往地圖邊緣跑更安全</li>
+                </ul>
+
+                <!-- AI 難度說明 -->
+                <h3 style="color: #764ba2; margin-top: 20px;">
+                    <span id="textAIDifficultyTitle">🤖 AI 難度說明</span>
+                </h3>
+                <ul style="line-height: 1.8; color: #333;">
+                    <li id="textAIEasy">🟢 簡單：適合新手，反應較慢，常隨機移動</li>
+                    <li id="textAIMedium">🟡 中等：平衡難度，會追擊和逃跑</li>
+                    <li id="textAIHard">🔴 困難：高手挑戰，反應極快，優先攻擊高分玩家</li>
+                </ul>
+            </div>
+
+            <button class="back-button" id="btnBackFromHowToPlay">
+                <span id="textBtnBackFromHowToPlay">返回主選單</span>
+            </button>
         </div>
     </div>
 
@@ -612,6 +696,45 @@
                 gameOver: '🏆 遊戲結束 🏆',
                 autoReturn: '15秒後自動返回大廳，或點擊下方按鈕',
 
+                // 新功能按鈕
+                btnSoloPractice: '⚡ 單人練習',
+                btnHowToPlay: '❓ 如何遊玩',
+                btnBackFromHowToPlay: '返回主選單',
+
+                // 遊戲說明頁面
+                textHowToPlayTitle: '📖 遊戲說明',
+                textBasicRulesTitle: '🎯 基本規則',
+                textRule1: '🕐 遊戲時長：5 分鐘',
+                textRule2: '🎮 操作：方向鍵 ↑↓←→ 或 WASD',
+                textRule3: '🟡 小豆子：+10 分',
+                textRule4: '🔵 能量豆：+50 分 + 15 秒強化模式',
+                textRule5: '🏆 目標：遊戲結束時分數最高者獲勝',
+
+                textScoreStealTitle: '⚔️ 搶分機制',
+                textNormalVsNormal: '普通 vs 普通',
+                textNormalVsNormalDesc: '分數高者搶走對方 20% 分數',
+                textPowerVsNormal: '能量豆 vs 普通',
+                textPowerVsNormalDesc: '搶走對方 50% 分數 💥',
+                textPowerVsPower: '能量豆 vs 能量豆',
+                textPowerVsPowerDesc: '彈開，不搶分',
+
+                textPowerPelletTitle: '⚡ 能量豆效果',
+                textPower1: '🔵 吃到能量豆後，進入 15 秒強化模式',
+                textPower2: '💥 碰到普通玩家時，搶走 50% 分數（超強！）',
+                textPower3: '⚠️ 最後 5 秒會有警告音效',
+                textPower4: '🗺️ 地圖上固定有 4 個能量豆（四個角落）',
+
+                textStrategyTitle: '💡 策略提示',
+                textTip1: '🎯 優先搶奪能量豆，可以快速逆轉分數',
+                textTip2: '🛡️ 分數領先時，避開有能量豆的玩家',
+                textTip3: '⚔️ 有能量豆時，主動追擊高分玩家',
+                textTip4: '🏃 被追擊時，往地圖邊緣跑更安全',
+
+                textAIDifficultyTitle: '🤖 AI 難度說明',
+                textAIEasy: '🟢 簡單：適合新手，反應較慢，常隨機移動',
+                textAIMedium: '🟡 中等：平衡難度，會追擊和逃跑',
+                textAIHard: '🔴 困難：高手挑戰，反應極快，優先攻擊高分玩家',
+
                 // Language toggle
                 languageToggle: 'English'
             },
@@ -671,6 +794,45 @@
                 warning30sec: '⚠️ Last 30 Seconds! ⚠️',
                 gameOver: '🏆 Game Over 🏆',
                 autoReturn: 'Returning to lobby in 15 seconds, or click the button below',
+
+                // New feature buttons
+                btnSoloPractice: '⚡ Solo Practice',
+                btnHowToPlay: '❓ How to Play',
+                btnBackFromHowToPlay: 'Back to Menu',
+
+                // How to Play page
+                textHowToPlayTitle: '📖 How to Play',
+                textBasicRulesTitle: '🎯 Basic Rules',
+                textRule1: '🕐 Game Duration: 5 minutes',
+                textRule2: '🎮 Controls: Arrow Keys ↑↓←→ or WASD',
+                textRule3: '🟡 Small Dot: +10 points',
+                textRule4: '🔵 Power Pellet: +50 points + 15s Power Mode',
+                textRule5: '🏆 Goal: Highest score wins when time runs out',
+
+                textScoreStealTitle: '⚔️ Score Stealing',
+                textNormalVsNormal: 'Normal vs Normal',
+                textNormalVsNormalDesc: 'Higher score steals 20% from opponent',
+                textPowerVsNormal: 'Power vs Normal',
+                textPowerVsNormalDesc: 'Steal 50% from opponent 💥',
+                textPowerVsPower: 'Power vs Power',
+                textPowerVsPowerDesc: 'Bounce off, no stealing',
+
+                textPowerPelletTitle: '⚡ Power Pellet Effects',
+                textPower1: '🔵 Enter 15-second Power Mode after eating',
+                textPower2: '💥 Steal 50% score from normal players (Super strong!)',
+                textPower3: '⚠️ Warning sound plays in last 5 seconds',
+                textPower4: '🗺️ 4 power pellets fixed at map corners',
+
+                textStrategyTitle: '💡 Strategy Tips',
+                textTip1: '🎯 Prioritize power pellets for quick comebacks',
+                textTip2: '🛡️ Avoid powered players when leading',
+                textTip3: '⚔️ Chase high-score players when powered',
+                textTip4: '🏃 Run to map edges when being chased',
+
+                textAIDifficultyTitle: '🤖 AI Difficulty',
+                textAIEasy: '🟢 Easy: Beginner-friendly, slow reaction, random movements',
+                textAIMedium: '🟡 Medium: Balanced difficulty, chases and escapes',
+                textAIHard: '🔴 Hard: Expert challenge, fast reaction, targets high scores',
 
                 // Language toggle
                 languageToggle: '中文'
@@ -1109,7 +1271,105 @@
             document.getElementById('joinRoomSection').style.display = 'none';
             document.querySelectorAll('.menu-buttons > button').forEach(b => b.style.display = 'block');
         }
-        
+
+        // ❓ 顯示遊戲說明頁面
+        function showHowToPlay() {
+            document.getElementById('menuScreen').classList.remove('active');
+            document.getElementById('howToPlayScreen').classList.add('active');
+        }
+
+        // 從遊戲說明頁面返回主選單
+        function backToMenuFromHowToPlay() {
+            document.getElementById('howToPlayScreen').classList.remove('active');
+            document.getElementById('menuScreen').classList.add('active');
+        }
+
+        // ⚡ 單人練習模式
+        async function startSoloPractice() {
+            // 自動填入玩家名稱
+            const playerName = '玩家';
+
+            currentRoomId = generateRoomCode();
+            currentPlayerId = 'player_' + Date.now();
+            isHost = true;
+
+            // 自動啟用 AI
+            aiEnabled = true;
+            aiCount = 9; // 9 個 AI
+            aiDifficulty = 'medium'; // 中等難度
+
+            if (!database) {
+                // Demo mode - 直接模擬開始
+                alert('演示模式：單人練習功能需要 Firebase 配置才能正常運作。');
+                return;
+            }
+
+            try {
+                const roomRef = database.ref(`rooms/${currentRoomId}`);
+
+                // 創建房間
+                await roomRef.set({
+                    code: currentRoomId,
+                    status: 'waiting',
+                    createdAt: Date.now(),
+                    host: currentPlayerId,
+                    maxPlayers: 10
+                });
+
+                // 加入玩家
+                const pos = startPositions[0];
+                await database.ref(`rooms/${currentRoomId}/players/${currentPlayerId}`).set({
+                    name: playerName,
+                    color: playerColors[0],
+                    score: 0,
+                    x: pos.x,
+                    y: pos.y,
+                    joinedAt: Date.now()
+                });
+
+                // 設定斷線處理
+                database.ref(`rooms/${currentRoomId}/players/${currentPlayerId}`).onDisconnect().remove();
+
+                // 生成迷宮
+                const maze = generateMaze();
+
+                // 添加 9 個 AI 玩家
+                for (let i = 0; i < 9; i++) {
+                    const aiId = `ai_${Date.now()}_${i}`;
+                    const aiName = `AI-${i + 1}`;
+                    const playerIndex = i + 1;
+                    const aiPos = startPositions[playerIndex];
+
+                    await database.ref(`rooms/${currentRoomId}/players/${aiId}`).set({
+                        name: aiName,
+                        color: playerColors[playerIndex],
+                        score: 0,
+                        x: aiPos.x,
+                        y: aiPos.y,
+                        joinedAt: Date.now(),
+                        isAI: true,
+                        aiDifficulty: aiDifficulty
+                    });
+                }
+
+                // 直接開始遊戲
+                await roomRef.update({
+                    status: 'playing',
+                    maze: maze,
+                    startedAt: Date.now()
+                });
+
+                console.log('Solo practice mode started successfully');
+
+                // 監聽房間變化
+                listenToRoom();
+
+            } catch (error) {
+                console.error('Error starting solo practice:', error);
+                alert('啟動單人練習時發生錯誤：' + error.message);
+            }
+        }
+
         // 建立房間
         async function createRoom() {
             console.log('createRoom function called');
@@ -2185,12 +2445,41 @@
                         ctx.arc(centerX + 4, centerY - 3, 2.5, 0, Math.PI * 2);
                         ctx.fill();
 
-                        // 能量豆倒數提示（最後5秒）
-                        if (isWarning) {
-                            ctx.fillStyle = '#FF0000';
-                            ctx.font = 'bold 10px Arial';
-                            ctx.textAlign = 'center';
-                            ctx.fillText(Math.ceil(timeRemaining), centerX, centerY + powerRadius + 15);
+                        // 🔥 能量豆倒數進度條（頭頂）
+                        if (isPowerMode) {
+                            const barWidth = 30;
+                            const barHeight = 4;
+                            const barX = centerX - barWidth / 2;
+                            const barY = player.y * CELL_SIZE - 15;
+
+                            // 計算剩餘比例
+                            const maxDuration = 15; // 15 秒
+                            const progress = Math.max(0, Math.min(1, timeRemaining / maxDuration));
+
+                            // 背景框
+                            ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+                            ctx.fillRect(barX - 1, barY - 1, barWidth + 2, barHeight + 2);
+
+                            // 進度條（顏色根據剩餘時間變化）
+                            let barColor;
+                            if (timeRemaining > 10) {
+                                barColor = '#00FF00'; // 綠色 (10-15秒)
+                            } else if (timeRemaining > 5) {
+                                barColor = '#FFFF00'; // 黃色 (5-10秒)
+                            } else {
+                                barColor = '#FF0000'; // 紅色 (0-5秒)
+                            }
+
+                            ctx.fillStyle = barColor;
+                            ctx.fillRect(barX, barY, barWidth * progress, barHeight);
+
+                            // 倒數數字（最後5秒）
+                            if (isWarning) {
+                                ctx.fillStyle = '#FF0000';
+                                ctx.font = 'bold 10px Arial';
+                                ctx.textAlign = 'center';
+                                ctx.fillText(Math.ceil(timeRemaining), centerX, barY - 3);
+                            }
                         }
                     } else {
                         // 普通模式或閃爍時顯示普通外觀
@@ -2744,6 +3033,24 @@
             document.getElementById('startButton').addEventListener('click', startGame);
             document.getElementById('btnLeaveLobby').addEventListener('click', leaveRoom);
             document.getElementById('btnLeaveGame').addEventListener('click', leaveRoom);
+
+            // ⚡ 單人練習模式
+            document.getElementById('btnSoloPractice').addEventListener('click', function() {
+                console.log('Solo Practice clicked');
+                startSoloPractice();
+            });
+
+            // ❓ 如何遊玩
+            document.getElementById('btnHowToPlay').addEventListener('click', function() {
+                console.log('How to Play clicked');
+                showHowToPlay();
+            });
+
+            // 返回主選單（從說明頁面）
+            document.getElementById('btnBackFromHowToPlay').addEventListener('click', function() {
+                console.log('Back from How to Play');
+                backToMenuFromHowToPlay();
+            });
 
             // 音效開關
             document.getElementById('btnToggleSound').addEventListener('click', function() {
