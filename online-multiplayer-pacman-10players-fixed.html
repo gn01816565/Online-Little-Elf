@@ -980,18 +980,61 @@
         }
 
         // ===========================================
-        // 遊戲狀態
+        // 遊戲狀態與常數
         // ===========================================
+
+        // 🎮 遊戲狀態變數
         let currentRoomId = null;
         let currentPlayerId = null;
         let isHost = false;
         let gameState = null;
-        
+
+        // 🎨 Canvas 設定
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const CELL_SIZE = 20;
-        const COLS = canvas.width / CELL_SIZE;
-        const ROWS = canvas.height / CELL_SIZE;
+        const COLS = canvas.width / CELL_SIZE;  // 50
+        const ROWS = canvas.height / CELL_SIZE;  // 40
+
+        // 🏗️ 迷宮生成常數
+        const MAZE_CONFIG = {
+            WALL_SPAWN_RATE: 0.12,      // 牆壁生成概率 (12%)
+            DOT_SPAWN_RATE: 0.65,        // 小豆子生成概率 (65%)
+            WALL_GRID_SIZE: 3,           // 牆壁網格大小
+            PLAYER_SPAWN_CLEAR: 5,       // 玩家起始點清空範圍 (5x5)
+            POWER_PELLET_CLEAR: 3        // 能量豆清空範圍 (3x3)
+        };
+
+        // 💯 搶分比例常數
+        const SCORE_STEAL_RATES = {
+            NORMAL_VS_NORMAL: 0.20,      // 普通 vs 普通：20%
+            POWER_VS_NORMAL: 0.50,       // 能量豆 vs 普通：50%
+            POWER_VS_POWER: 0.30         // 能量豆 vs 能量豆：30%
+        };
+
+        // ⏱️ 時間常數（毫秒）
+        const TIME_CONSTANTS = {
+            GAME_DURATION: 5 * 60 * 1000,    // 遊戲時長：5分鐘
+            POWER_MODE_DURATION: 15000,      // 能量豆效果：15秒
+            POWER_WARNING_TIME: 5000,        // 能量豆警告：剩5秒
+            COLLISION_COOLDOWN: 1000,        // 碰撞冷卻：1秒
+            MOVE_DELAY: 120,                 // 移動延遲：120毫秒
+            ROOM_CLEANUP_DELAY: 20000        // 房間清理延遲：20秒
+        };
+
+        // 🎯 分數常數
+        const SCORE_VALUES = {
+            DOT: 10,                         // 小豆子分數
+            POWER_PELLET: 50                 // 能量豆分數
+        };
+
+        // 🎨 地圖元素常數
+        const TILE_TYPES = {
+            EMPTY: 0,                        // 空地
+            WALL: 1,                         // 牆壁
+            DOT: 2,                          // 小豆子
+            POWER_PELLET: 3                  // 能量豆
+        };
         
         // 10個不同的起始位置
         const startPositions = [
@@ -1319,13 +1362,14 @@
                 maze[y] = [];
                 for (let x = 0; x < COLS; x++) {
                     if (x === 0 || x === COLS - 1 || y === 0 || y === ROWS - 1) {
-                        maze[y][x] = 1; // 邊界牆
-                    } else if (Math.random() < 0.12 && (x % 3 === 0 && y % 3 === 0)) {
-                        maze[y][x] = 1; // 內部牆壁（12% 概率，網格狀分布）
-                    } else if (Math.random() < 0.65) {
-                        maze[y][x] = 2; // 小豆子（65% 概率）
+                        maze[y][x] = TILE_TYPES.WALL; // 邊界牆
+                    } else if (Math.random() < MAZE_CONFIG.WALL_SPAWN_RATE &&
+                               (x % MAZE_CONFIG.WALL_GRID_SIZE === 0 && y % MAZE_CONFIG.WALL_GRID_SIZE === 0)) {
+                        maze[y][x] = TILE_TYPES.WALL; // 內部牆壁（網格狀分布）
+                    } else if (Math.random() < MAZE_CONFIG.DOT_SPAWN_RATE) {
+                        maze[y][x] = TILE_TYPES.DOT; // 小豆子
                     } else {
-                        maze[y][x] = 0; // 空地（35% 概率）
+                        maze[y][x] = TILE_TYPES.EMPTY; // 空地
                     }
                 }
             }
@@ -1713,7 +1757,7 @@
                     // 判斷搶分規則
                     if (myPowerMode && !otherPowerMode) {
                         // 我在 power mode，對方不在：搶 50%
-                        const stolen = Math.floor((otherPlayer.score || 0) * 0.5);
+                        const stolen = Math.floor((otherPlayer.score || 0) * SCORE_STEAL_RATES.POWER_VS_NORMAL);
                         myScoreChange = stolen;
                         otherScoreChange = -stolen;
                         showScoreFloating(myX, myY, `+${stolen}`, '#00FF00');
@@ -1722,7 +1766,7 @@
                         if (stolen > 0) soundScore(); // 🔊 得分音效
                     } else if (!myPowerMode && otherPowerMode) {
                         // 對方在 power mode，我不在：被搶 50%
-                        const stolen = Math.floor((myPlayer.score || 0) * 0.5);
+                        const stolen = Math.floor((myPlayer.score || 0) * SCORE_STEAL_RATES.POWER_VS_NORMAL);
                         myScoreChange = -stolen;
                         otherScoreChange = stolen;
                         showScoreFloating(myX, myY, `-${stolen}`, '#FF0000');
@@ -1738,7 +1782,7 @@
                         const otherScore = otherPlayer.score || 0;
 
                         if (myScore > otherScore) {
-                            const stolen = Math.floor(otherScore * 0.2);
+                            const stolen = Math.floor(otherScore * SCORE_STEAL_RATES.NORMAL_VS_NORMAL);
                             myScoreChange = stolen;
                             otherScoreChange = -stolen;
                             showScoreFloating(myX, myY, `+${stolen}`, '#00FF00');
@@ -1746,7 +1790,7 @@
                             soundCollision(); // 🔊 碰撞音效
                             if (stolen > 0) soundScore(); // 🔊 得分音效
                         } else if (otherScore > myScore) {
-                            const stolen = Math.floor(myScore * 0.2);
+                            const stolen = Math.floor(myScore * SCORE_STEAL_RATES.NORMAL_VS_NORMAL);
                             myScoreChange = -stolen;
                             otherScoreChange = stolen;
                             showScoreFloating(myX, myY, `-${stolen}`, '#FF0000');
