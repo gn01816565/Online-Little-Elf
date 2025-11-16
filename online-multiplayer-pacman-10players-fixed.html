@@ -433,6 +433,31 @@
                     <label id="labelHostName">你的暱稱：</label>
                     <input type="text" id="hostName" data-placeholder-key="placeholderNickname" placeholder="輸入你的暱稱" maxlength="15">
                 </div>
+
+                <!-- 🤖 AI 配置選項 -->
+                <div class="input-group" style="margin-top: 20px;">
+                    <label style="display: flex; align-items: center; cursor: pointer;">
+                        <input type="checkbox" id="enableAI" style="width: auto; margin-right: 10px;">
+                        <span>🤖 加入 AI 玩家</span>
+                    </label>
+                </div>
+
+                <div id="aiConfigSection" style="display: none; margin-top: 15px; padding: 15px; background: rgba(102, 126, 234, 0.1); border-radius: 10px;">
+                    <div class="input-group">
+                        <label>AI 數量：<span id="aiCountValue">2</span></label>
+                        <input type="range" id="aiCount" min="1" max="9" value="2" style="width: 100%;">
+                    </div>
+
+                    <div class="input-group">
+                        <label>AI 難度：</label>
+                        <select id="aiDifficulty" style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #ddd; font-size: 1em;">
+                            <option value="easy">🟢 簡單 (Easy)</option>
+                            <option value="medium" selected>🟡 中等 (Medium)</option>
+                            <option value="hard">🔴 困難 (Hard)</option>
+                        </select>
+                    </div>
+                </div>
+
                 <button id="btnCreateRoom"><span id="textBtnCreateRoom">建立房間</span></button>
                 <button class="back-button" id="btnBackFromCreate"><span id="textBtnBack1">返回</span></button>
             </div>
@@ -497,7 +522,10 @@
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-    
+
+    <!-- AI Player System -->
+    <script src="ai-player.js"></script>
+
     <script>
         // Firebase 配置 - 請替換為你自己的配置
         const firebaseConfig = {
@@ -989,6 +1017,12 @@
         let isHost = false;
         let gameState = null;
 
+        // 🤖 AI 管理器
+        let aiManager = null;
+        let aiEnabled = false;
+        let aiCount = 0;
+        let aiDifficulty = 'medium';
+
         // 🎨 Canvas 設定
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
@@ -1322,6 +1356,32 @@
                 // 生成迷宮
                 const maze = generateMaze();
 
+                // 🤖 添加 AI 玩家（如果啟用）
+                if (aiEnabled && aiCount > 0) {
+                    const currentPlayers = roomData.players ? Object.keys(roomData.players).length : 0;
+                    const maxAI = Math.min(aiCount, 10 - currentPlayers); // 不超過房間上限
+
+                    for (let i = 0; i < maxAI; i++) {
+                        const aiId = `ai_${Date.now()}_${i}`;
+                        const aiName = `AI-${aiDifficulty.toUpperCase()}-${i + 1}`;
+                        const playerIndex = currentPlayers + i;
+                        const pos = startPositions[playerIndex];
+
+                        await database.ref(`rooms/${currentRoomId}/players/${aiId}`).set({
+                            name: aiName,
+                            color: playerColors[playerIndex],
+                            score: 0,
+                            x: pos.x,
+                            y: pos.y,
+                            joinedAt: Date.now(),
+                            isAI: true,
+                            aiDifficulty: aiDifficulty
+                        });
+
+                        console.log(`AI player added: ${aiName}`);
+                    }
+                }
+
                 // 更新房間狀態
                 await roomRef.update({
                     status: 'playing',
@@ -1417,13 +1477,34 @@
         // 初始化遊戲
         function initGame(data) {
             gameState = data;
-            
+
             document.getElementById('lobbyScreen').classList.remove('active');
             document.getElementById('gameScreen').classList.add('active');
-            
+
+            // 🤖 初始化 AI 管理器
+            if (typeof AIManager !== 'undefined') {
+                aiManager = new AIManager();
+                aiManager.setGameState(gameState);
+
+                // 為每個 AI 玩家創建 AI 實例
+                if (data.players) {
+                    Object.entries(data.players).forEach(([id, player]) => {
+                        if (player.isAI) {
+                            const difficulty = player.aiDifficulty || 'medium';
+                            const ai = aiManager.createAI(id, player.name, difficulty);
+                            ai.x = player.x;
+                            ai.y = player.y;
+                            ai.score = player.score;
+                            ai.start(); // 啟動 AI
+                            console.log(`AI ${player.name} initialized with difficulty ${difficulty}`);
+                        }
+                    });
+                }
+            }
+
             // 更新玩家資訊面板
             updateInfoPanel(data.players);
-            
+
             // 開始遊戲循環
             gameLoop();
 
@@ -1846,7 +1927,7 @@
         // 更新遊戲狀態
         function updateGameState(data) {
             gameState = data;
-            
+
             // 更新分數顯示
             if (data.players) {
                 Object.entries(data.players).forEach(([id, player]) => {
@@ -1857,7 +1938,46 @@
                 });
             }
         }
-        
+
+        // 🤖 處理 AI 玩家碰撞
+        function handleAICollision(aiId, aiPlayer, otherId, otherPlayer, now) {
+            if (!database) return;
+
+            // 檢查冷卻時間
+            const cooldownKey = `${aiId}_${otherId}`;
+            const lastCollision = window.aiCollisionCooldowns = window.aiCollisionCooldowns || {};
+            if (lastCollision[cooldownKey] && now - lastCollision[cooldownKey] < TIME_CONSTANTS.COLLISION_COOLDOWN) {
+                return; // 還在冷卻期間
+            }
+
+            lastCollision[cooldownKey] = now;
+
+            // 計算搶分
+            let stealRate = SCORE_STEAL_RATES.NORMAL_VS_NORMAL;
+
+            if (aiPlayer.powerMode && !otherPlayer.powerMode) {
+                stealRate = SCORE_STEAL_RATES.POWER_VS_NORMAL;
+            } else if (aiPlayer.powerMode && otherPlayer.powerMode) {
+                stealRate = SCORE_STEAL_RATES.POWER_VS_POWER;
+            }
+
+            const stolenPoints = Math.floor((otherPlayer.score || 0) * stealRate);
+
+            if (stolenPoints > 0) {
+                // 更新 AI 玩家分數
+                database.ref(`rooms/${currentRoomId}/players/${aiId}/score`)
+                    .set((aiPlayer.score || 0) + stolenPoints)
+                    .catch(error => console.error('Error updating AI score:', error));
+
+                // 更新被搶玩家分數
+                database.ref(`rooms/${currentRoomId}/players/${otherId}/score`)
+                    .set(Math.max(0, (otherPlayer.score || 0) - stolenPoints))
+                    .catch(error => console.error('Error updating victim score:', error));
+
+                console.log(`AI ${aiPlayer.name} stole ${stolenPoints} points from ${otherPlayer.name}`);
+            }
+        }
+
         // 遊戲循環
         function gameLoop() {
             if (!gameState) return;
@@ -1912,6 +2032,68 @@
                             powerWarningPlayed[id] = true;
                         }
                     }
+                });
+            }
+
+            // 🤖 AI 控制邏輯
+            if (aiManager && gameState.players && database && isHost) {
+                // 更新所有 AI 的狀態
+                aiManager.updateAll(gameState.players);
+
+                // 獲取所有 AI 的移動指令
+                const aiMoves = aiManager.getAllMoves();
+
+                // 執行 AI 移動
+                Object.entries(aiMoves).forEach(([aiId, direction]) => {
+                    const player = gameState.players[aiId];
+                    if (!player) return;
+
+                    // 計算新位置
+                    let newX = player.x;
+                    let newY = player.y;
+
+                    switch (direction) {
+                        case 'up': newY--; break;
+                        case 'down': newY++; break;
+                        case 'left': newX--; break;
+                        case 'right': newX++; break;
+                    }
+
+                    // 檢查邊界
+                    if (newY < 0 || newY >= ROWS || newX < 0 || newX >= COLS) return;
+
+                    // 檢查牆壁
+                    if (gameState.maze && gameState.maze[newY] && gameState.maze[newY][newX] === 1) return;
+
+                    // 執行移動
+                    const updates = { x: newX, y: newY };
+
+                    // 檢查是否吃到豆子
+                    if (gameState.maze && gameState.maze[newY] && gameState.maze[newY][newX] === 2) {
+                        updates.score = (player.score || 0) + SCORE_VALUES.DOT;
+                        database.ref(`rooms/${currentRoomId}/maze/${newY}/${newX}`).set(0);
+                    }
+
+                    // 檢查是否吃到能量豆
+                    if (gameState.maze && gameState.maze[newY] && gameState.maze[newY][newX] === 3) {
+                        updates.score = (player.score || 0) + SCORE_VALUES.POWER_PELLET;
+                        updates.powerMode = true;
+                        updates.powerEndTime = now + TIME_CONSTANTS.POWER_MODE_DURATION;
+                        database.ref(`rooms/${currentRoomId}/maze/${newY}/${newX}`).set(0);
+                    }
+
+                    // 更新 AI 玩家位置
+                    database.ref(`rooms/${currentRoomId}/players/${aiId}`).update(updates)
+                        .catch(error => console.error('Error updating AI player:', error));
+
+                    // 檢查碰撞（AI vs 其他玩家）
+                    Object.entries(gameState.players).forEach(([otherId, otherPlayer]) => {
+                        if (otherId === aiId) return;
+                        if (otherPlayer.x === newX && otherPlayer.y === newY) {
+                            // 發生碰撞，處理搶分邏輯
+                            handleAICollision(aiId, player, otherId, otherPlayer, now);
+                        }
+                    });
                 });
             }
 
@@ -2578,6 +2760,33 @@
 
             // 初始化語言設定
             updateUILanguage();
+
+            // 🤖 AI 配置事件監聽器
+            const enableAICheckbox = document.getElementById('enableAI');
+            const aiConfigSection = document.getElementById('aiConfigSection');
+            const aiCountSlider = document.getElementById('aiCount');
+            const aiCountValue = document.getElementById('aiCountValue');
+            const aiDifficultySelect = document.getElementById('aiDifficulty');
+
+            // AI 啟用/禁用切換
+            enableAICheckbox.addEventListener('change', function() {
+                aiEnabled = this.checked;
+                aiConfigSection.style.display = aiEnabled ? 'block' : 'none';
+                console.log('AI enabled:', aiEnabled);
+            });
+
+            // AI 數量滑桿
+            aiCountSlider.addEventListener('input', function() {
+                aiCount = parseInt(this.value);
+                aiCountValue.textContent = aiCount;
+                console.log('AI count:', aiCount);
+            });
+
+            // AI 難度選擇
+            aiDifficultySelect.addEventListener('change', function() {
+                aiDifficulty = this.value;
+                console.log('AI difficulty:', aiDifficulty);
+            });
 
             // Enter 鍵支持
             document.getElementById('hostName').addEventListener('keypress', (e) => {
