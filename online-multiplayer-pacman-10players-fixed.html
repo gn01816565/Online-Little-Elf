@@ -243,6 +243,151 @@
         .language-toggle:active {
             transform: translateY(0);
         }
+
+        /* 🎮 虛擬搖桿樣式（移動端） */
+        .virtual-joystick {
+            display: none; /* 預設隱藏 */
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            width: 150px;
+            height: 150px;
+            z-index: 1000;
+            touch-action: none; /* 防止觸控滾動 */
+            opacity: 0.85; /* 半透明，避免遮擋遊戲畫面 */
+        }
+
+        .joystick-base {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(102, 126, 234, 0.3) 0%, rgba(118, 75, 162, 0.2) 100%);
+            border: 3px solid rgba(102, 126, 234, 0.5);
+            border-radius: 50%;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .joystick-stick {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: radial-gradient(circle, #667eea 0%, #764ba2 100%);
+            border: 3px solid white;
+            border-radius: 50%;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 0.1s ease-out;
+        }
+
+        .joystick-stick.active {
+            background: radial-gradient(circle, #764ba2 0%, #667eea 100%);
+            box-shadow: 0 3px 15px rgba(102, 126, 234, 0.6);
+        }
+
+        /* 📱 移動端適配 */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                padding: 15px;
+                border-radius: 10px;
+            }
+
+            h1 {
+                font-size: 1.5em;
+                margin-bottom: 15px;
+            }
+
+            button {
+                padding: 12px 24px;
+                font-size: 1em;
+            }
+
+            .language-toggle {
+                top: 10px;
+                right: 10px;
+                padding: 8px 16px;
+                font-size: 0.9em;
+            }
+
+            canvas {
+                width: 100% !important;
+                height: auto !important;
+            }
+
+            .virtual-joystick {
+                display: block; /* 移動端顯示虛擬搖桿 */
+                width: 120px;
+                height: 120px;
+                bottom: 20px;
+                left: 20px;
+            }
+
+            .joystick-stick {
+                width: 50px;
+                height: 50px;
+            }
+
+            .info-panel {
+                grid-template-columns: 1fr;
+            }
+
+            .player-info {
+                font-size: 0.8em;
+                padding: 8px 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.2em;
+            }
+
+            .container {
+                padding: 10px;
+            }
+
+            button {
+                padding: 10px 20px;
+                font-size: 0.9em;
+            }
+
+            .virtual-joystick {
+                width: 100px;
+                height: 100px;
+                bottom: 15px;
+                left: 15px;
+            }
+
+            .joystick-stick {
+                width: 40px;
+                height: 40px;
+            }
+
+            .language-toggle {
+                padding: 6px 12px;
+                font-size: 0.8em;
+            }
+        }
+
+        /* 🖥️ 桌面端隱藏虛擬搖桿，顯示鍵盤提示 */
+        .keyboard-hint {
+            display: block;
+            text-align: center;
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .keyboard-hint {
+                display: none; /* 移動端隱藏鍵盤提示 */
+            }
+        }
     </style>
 </head>
 <body>
@@ -319,6 +464,12 @@
                 <button class="back-button" id="btnLeaveGame"><span id="textBtnLeaveGame">離開遊戲</span></button>
             </div>
         </div>
+    </div>
+
+    <!-- 🎮 虛擬搖桿（移動端） -->
+    <div class="virtual-joystick" id="virtualJoystick">
+        <div class="joystick-base"></div>
+        <div class="joystick-stick" id="joystickStick"></div>
     </div>
 
     <!-- Firebase SDK -->
@@ -784,6 +935,26 @@
         }
 
         // ===========================================
+        // 🔧 工具函數：節流（Throttle）
+        // ===========================================
+        /**
+         * 節流函數：限制函數執行頻率
+         * @param {Function} func - 要執行的函數
+         * @param {number} delay - 延遲時間（毫秒）
+         * @returns {Function} 節流後的函數
+         */
+        function throttle(func, delay) {
+            let lastCall = 0;
+            return function(...args) {
+                const now = Date.now();
+                if (now - lastCall >= delay) {
+                    lastCall = now;
+                    return func.apply(this, args);
+                }
+            };
+        }
+
+        // ===========================================
         // 遊戲狀態
         // ===========================================
         let currentRoomId = null;
@@ -1186,9 +1357,12 @@
             
             // 開始遊戲循環
             gameLoop();
-            
+
             // 監聽鍵盤
             setupKeyboardControls();
+
+            // 監聽觸控（移動端）
+            setupTouchControls();
         }
         
         // 更新玩家資訊面板
@@ -1300,6 +1474,165 @@
 
             keyboardListenerAdded = true;
             console.log('Keyboard controls set up successfully');
+        }
+
+        /**
+         * 🎮 設置虛擬搖桿控制（移動端）
+         *
+         * 功能：
+         * - 觸控虛擬搖桿移動玩家
+         * - 視覺回饋（搖桿移動）
+         * - 與鍵盤控制共用移動延遲
+         *
+         * @returns {void}
+         */
+        function setupTouchControls() {
+            const joystick = document.getElementById('virtualJoystick');
+            const stick = document.getElementById('joystickStick');
+
+            if (!joystick || !stick) {
+                console.warn('Virtual joystick elements not found');
+                return;
+            }
+
+            let touchStartTime = 0;
+            const touchMoveDelay = 120; // 與鍵盤移動延遲相同
+            let lastTouchMoveTime = 0;
+            let touchActive = false;
+            let moveInterval = null;
+
+            // 觸控開始
+            joystick.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                touchActive = true;
+                touchStartTime = Date.now();
+                stick.classList.add('active');
+                console.log('Touch started');
+            }, { passive: false });
+
+            // 觸控移動
+            joystick.addEventListener('touchmove', async (e) => {
+                e.preventDefault();
+                if (!touchActive || !gameState) return;
+
+                const now = Date.now();
+                if (now - lastTouchMoveTime < touchMoveDelay) return;
+
+                try {
+                    const touch = e.touches[0];
+                    const rect = joystick.getBoundingClientRect();
+                    const centerX = rect.left + rect.width / 2;
+                    const centerY = rect.top + rect.height / 2;
+
+                    // 計算觸控點相對於中心的偏移
+                    const deltaX = touch.clientX - centerX;
+                    const deltaY = touch.clientY - centerY;
+
+                    // 計算距離和角度
+                    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                    const maxDistance = rect.width / 2 - 20; // 搖桿移動最大距離
+
+                    // 限制搖桿移動範圍
+                    const limitedDistance = Math.min(distance, maxDistance);
+                    const angle = Math.atan2(deltaY, deltaX);
+
+                    // 更新搖桿視覺位置
+                    const stickX = Math.cos(angle) * limitedDistance;
+                    const stickY = Math.sin(angle) * limitedDistance;
+                    stick.style.transform = `translate(calc(-50% + ${stickX}px), calc(-50% + ${stickY}px))`;
+
+                    // 判斷主要移動方向（需要足夠的偏移量才觸發移動）
+                    const threshold = 15; // 觸發移動的最小距離
+                    if (distance < threshold) return;
+
+                    let direction = null;
+                    const absX = Math.abs(deltaX);
+                    const absY = Math.abs(deltaY);
+
+                    // 選擇主要方向（X 或 Y 軸）
+                    if (absX > absY) {
+                        direction = deltaX > 0 ? 'right' : 'left';
+                    } else {
+                        direction = deltaY > 0 ? 'down' : 'up';
+                    }
+
+                    // 執行移動
+                    if (direction && database && currentRoomId && currentPlayerId) {
+                        const playerRef = database.ref(`rooms/${currentRoomId}/players/${currentPlayerId}`);
+                        const snapshot = await playerRef.once('value');
+                        const player = snapshot.val();
+
+                        if (!player) {
+                            console.warn('Player data not found');
+                            return;
+                        }
+
+                        let newX = player.x;
+                        let newY = player.y;
+
+                        switch (direction) {
+                            case 'up': newY--; break;
+                            case 'down': newY++; break;
+                            case 'left': newX--; break;
+                            case 'right': newX++; break;
+                        }
+
+                        // 檢查邊界和碰撞
+                        if (newX >= 0 && newX < COLS && newY >= 0 && newY < ROWS) {
+                            if (gameState.maze[newY][newX] !== 1) {
+                                lastTouchMoveTime = now;
+
+                                const updates = {
+                                    x: newX,
+                                    y: newY
+                                };
+
+                                // 檢查是否吃到豆子
+                                if (gameState.maze[newY][newX] === 2) {
+                                    updates.score = (player.score || 0) + 10;
+                                    await database.ref(`rooms/${currentRoomId}/maze/${newY}/${newX}`).set(0);
+                                    soundEatDot(); // 🔊 吃豆子音效
+                                } else if (gameState.maze[newY][newX] === 3) {
+                                    // 吃到能量豆：加分 + 進入 power mode
+                                    updates.score = (player.score || 0) + 50;
+                                    updates.powerMode = true;
+                                    updates.powerEndTime = Date.now() + 15000; // 15秒 power mode
+                                    await database.ref(`rooms/${currentRoomId}/maze/${newY}/${newX}`).set(0);
+                                    soundEatPowerPellet(); // 🔊 吃能量豆音效
+                                    setTimeout(() => soundPowerMode(), 320); // 🔊 變身音效（延遲播放）
+                                }
+
+                                await playerRef.update(updates);
+
+                                // 檢查碰撞（移動後）
+                                checkCollision(newX, newY);
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error handling touch input:', error);
+                }
+            }, { passive: false });
+
+            // 觸控結束
+            const handleTouchEnd = (e) => {
+                e.preventDefault();
+                touchActive = false;
+                stick.classList.remove('active');
+                // 重置搖桿位置（回到中心）
+                stick.style.transform = 'translate(-50%, -50%)';
+
+                if (moveInterval) {
+                    clearInterval(moveInterval);
+                    moveInterval = null;
+                }
+                console.log('Touch ended');
+            };
+
+            joystick.addEventListener('touchend', handleTouchEnd, { passive: false });
+            joystick.addEventListener('touchcancel', handleTouchEnd, { passive: false });
+
+            console.log('Touch controls set up successfully');
         }
 
         // 🔧 碰撞冷卻追蹤（避免重複碰撞）
