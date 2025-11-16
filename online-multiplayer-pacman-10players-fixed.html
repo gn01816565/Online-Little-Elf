@@ -4,6 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>線上多人小精靈遊戲 (10人版)</title>
+
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="支援最多 10 人同時遊玩的線上多人 Pac-Man 遊戲，具備虛擬搖桿、即時排名、能量豆系統">
+    <meta name="keywords" content="小精靈,pacman,多人遊戲,線上遊戲,HTML5遊戲">
+    <meta name="author" content="Claude Code AI Assistant">
+    <meta name="theme-color" content="#764ba2">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="小精靈">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="小精靈">
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+
+    <!-- PWA Icons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="icon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="icon-16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="icon-192.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="icon-152.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="icon-128.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="icon-72.png">
     <style>
         * {
             margin: 0;
@@ -833,6 +855,9 @@
 
         // 4. 碰撞音效 (砰)
         function soundCollision() {
+            // 📳 震動回饋
+            if (window.gameVibrate) window.gameVibrate.collision();
+
             if (!isSoundEnabled) return;
             try {
                 initAudio();
@@ -1451,6 +1476,7 @@
                                 updates.score = (player.score || 0) + 10;
                                 await database.ref(`rooms/${currentRoomId}/maze/${newY}/${newX}`).set(0);
                                 soundEatDot(); // 🔊 吃豆子音效
+                                window.gameVibrate?.eatDot(); // 📳 震動回饋
                             } else if (gameState.maze[newY][newX] === 3) {
                                 // 吃到能量豆：加分 + 進入 power mode
                                 updates.score = (player.score || 0) + 50;
@@ -1458,6 +1484,7 @@
                                 updates.powerEndTime = Date.now() + 15000; // 15秒 power mode
                                 await database.ref(`rooms/${currentRoomId}/maze/${newY}/${newX}`).set(0);
                                 soundEatPowerPellet(); // 🔊 吃能量豆音效
+                                window.gameVibrate?.eatPowerPellet(); // 📳 震動回饋
                                 setTimeout(() => soundPowerMode(), 320); // 🔊 變身音效（延遲播放）
                             }
 
@@ -1592,6 +1619,7 @@
                                     updates.score = (player.score || 0) + 10;
                                     await database.ref(`rooms/${currentRoomId}/maze/${newY}/${newX}`).set(0);
                                     soundEatDot(); // 🔊 吃豆子音效
+                                    window.gameVibrate?.eatDot(); // 📳 震動回饋
                                 } else if (gameState.maze[newY][newX] === 3) {
                                     // 吃到能量豆：加分 + 進入 power mode
                                     updates.score = (player.score || 0) + 50;
@@ -1599,6 +1627,7 @@
                                     updates.powerEndTime = Date.now() + 15000; // 15秒 power mode
                                     await database.ref(`rooms/${currentRoomId}/maze/${newY}/${newX}`).set(0);
                                     soundEatPowerPellet(); // 🔊 吃能量豆音效
+                                    window.gameVibrate?.eatPowerPellet(); // 📳 震動回饋
                                     setTimeout(() => soundPowerMode(), 320); // 🔊 變身音效（延遲播放）
                                 }
 
@@ -2275,7 +2304,183 @@
             }
             window.location.reload();
         }
-        
+
+        // ==================== PWA 支援 ====================
+
+        /**
+         * 📱 註冊 Service Worker
+         * 提供離線支援和快取功能
+         */
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then((registration) => {
+                        console.log('✅ Service Worker 註冊成功:', registration.scope);
+
+                        // 檢查更新
+                        registration.addEventListener('updatefound', () => {
+                            const newWorker = registration.installing;
+                            console.log('🔄 發現新版本 Service Worker');
+
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    // 新版本可用，提示用戶重新載入
+                                    if (confirm('發現新版本！是否立即更新？')) {
+                                        newWorker.postMessage({ type: 'SKIP_WAITING' });
+                                        window.location.reload();
+                                    }
+                                }
+                            });
+                        });
+                    })
+                    .catch((error) => {
+                        console.error('❌ Service Worker 註冊失敗:', error);
+                    });
+
+                // Service Worker 更新後自動重新載入
+                let refreshing = false;
+                navigator.serviceWorker.addEventListener('controllerchange', () => {
+                    if (!refreshing) {
+                        refreshing = true;
+                        window.location.reload();
+                    }
+                });
+            });
+        }
+
+        /**
+         * 🎮 觸控震動回饋
+         * 為移動端提供觸覺反饋
+         */
+        const vibrate = {
+            // 吃豆子震動 (短促)
+            eatDot: () => {
+                if ('vibrate' in navigator) {
+                    navigator.vibrate(30);
+                }
+            },
+
+            // 吃能量豆震動 (中等)
+            eatPowerPellet: () => {
+                if ('vibrate' in navigator) {
+                    navigator.vibrate([50, 30, 50]);
+                }
+            },
+
+            // 碰撞震動 (強烈)
+            collision: () => {
+                if ('vibrate' in navigator) {
+                    navigator.vibrate([100, 50, 100, 50, 100]);
+                }
+            },
+
+            // 遊戲開始震動
+            gameStart: () => {
+                if ('vibrate' in navigator) {
+                    navigator.vibrate([50, 100, 50]);
+                }
+            },
+
+            // 遊戲結束震動
+            gameEnd: () => {
+                if ('vibrate' in navigator) {
+                    navigator.vibrate([200, 100, 200, 100, 200]);
+                }
+            },
+
+            // 按鈕點擊震動 (極短)
+            buttonClick: () => {
+                if ('vibrate' in navigator) {
+                    navigator.vibrate(10);
+                }
+            }
+        };
+
+        // 將震動功能加入全域 (方便其他函數調用)
+        window.gameVibrate = vibrate;
+
+        /**
+         * 🔔 PWA 安裝提示
+         * 提示用戶將遊戲安裝到主畫面
+         */
+        let deferredPrompt;
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            console.log('💡 PWA 可以安裝');
+            e.preventDefault();
+            deferredPrompt = e;
+
+            // 顯示安裝提示（可選）
+            const installBanner = document.createElement('div');
+            installBanner.id = 'install-banner';
+            installBanner.style.cssText = `
+                position: fixed;
+                bottom: 80px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 15px 25px;
+                border-radius: 25px;
+                box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+                z-index: 9999;
+                display: flex;
+                gap: 10px;
+                align-items: center;
+                font-weight: bold;
+                cursor: pointer;
+                animation: slideUp 0.5s ease-out;
+            `;
+            installBanner.innerHTML = `
+                <span>📱</span>
+                <span>安裝遊戲到主畫面</span>
+                <button id="install-button" style="
+                    background: white;
+                    color: #764ba2;
+                    border: none;
+                    padding: 8px 16px;
+                    border-radius: 15px;
+                    font-weight: bold;
+                    cursor: pointer;
+                ">安裝</button>
+                <button id="install-dismiss" style="
+                    background: transparent;
+                    color: white;
+                    border: 1px solid white;
+                    padding: 8px 16px;
+                    border-radius: 15px;
+                    cursor: pointer;
+                ">稍後</button>
+            `;
+
+            document.body.appendChild(installBanner);
+
+            // 安裝按鈕事件
+            document.getElementById('install-button')?.addEventListener('click', async () => {
+                vibrate.buttonClick();
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    const { outcome } = await deferredPrompt.userChoice;
+                    console.log(`PWA 安裝結果: ${outcome}`);
+                    deferredPrompt = null;
+                    installBanner.remove();
+                }
+            });
+
+            // 稍後按鈕事件
+            document.getElementById('install-dismiss')?.addEventListener('click', () => {
+                vibrate.buttonClick();
+                installBanner.remove();
+            });
+        });
+
+        // PWA 安裝成功
+        window.addEventListener('appinstalled', () => {
+            console.log('✅ PWA 安裝成功');
+            vibrate.gameStart();
+            deferredPrompt = null;
+        });
+
         // 頁面載入後設定事件監聽器
         window.addEventListener('DOMContentLoaded', function() {
             console.log('DOM loaded, setting up event listeners');
