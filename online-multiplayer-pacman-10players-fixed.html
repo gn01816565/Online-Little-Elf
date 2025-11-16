@@ -215,74 +215,108 @@
             background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
             margin-top: 10px;
         }
+
+        .language-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1em;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-weight: bold;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .language-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .language-toggle:active {
+            transform: translateY(0);
+        }
     </style>
 </head>
 <body>
+    <button class="language-toggle" id="languageToggle">
+        <span id="langIcon">🌐</span>
+        <span id="langText">English</span>
+    </button>
+
     <div class="container">
-        <h1>🎮 線上多人小精靈 (最多10人) 🎮</h1>
+        <h1 id="mainTitle">🎮 線上多人小精靈 (最多10人) 🎮</h1>
         
         <!-- 主選單 -->
         <div id="menuScreen" class="menu-screen active">
             <div class="menu-buttons">
-                <button id="btnShowCreate">🎯 建立遊戲房間</button>
-                <button id="btnShowJoin">🚪 加入遊戲房間</button>
+                <button id="btnShowCreate"><span id="textBtnCreate">🎯 建立遊戲房間</span></button>
+                <button id="btnShowJoin"><span id="textBtnJoin">🚪 加入遊戲房間</span></button>
             </div>
-            
+
             <div id="createRoomSection" style="display: none;">
                 <div class="input-group">
-                    <label>你的暱稱：</label>
-                    <input type="text" id="hostName" placeholder="輸入你的暱稱" maxlength="15">
+                    <label id="labelHostName">你的暱稱：</label>
+                    <input type="text" id="hostName" data-placeholder-key="placeholderNickname" placeholder="輸入你的暱稱" maxlength="15">
                 </div>
-                <button id="btnCreateRoom">建立房間</button>
-                <button class="back-button" id="btnBackFromCreate">返回</button>
+                <button id="btnCreateRoom"><span id="textBtnCreateRoom">建立房間</span></button>
+                <button class="back-button" id="btnBackFromCreate"><span id="textBtnBack1">返回</span></button>
             </div>
-            
+
             <div id="joinRoomSection" style="display: none;">
                 <div class="input-group">
-                    <label>你的暱稱：</label>
-                    <input type="text" id="playerName" placeholder="輸入你的暱稱" maxlength="15">
+                    <label id="labelPlayerName">你的暱稱：</label>
+                    <input type="text" id="playerName" data-placeholder-key="placeholderNickname" placeholder="輸入你的暱稱" maxlength="15">
                 </div>
                 <div class="input-group">
-                    <label>房間代碼：</label>
-                    <input type="text" id="roomCode" placeholder="輸入6位數房間代碼" maxlength="6">
+                    <label id="labelRoomCode">房間代碼：</label>
+                    <input type="text" id="roomCode" data-placeholder-key="placeholderRoomCode" placeholder="輸入6位數房間代碼" maxlength="6">
                 </div>
-                <button id="btnJoinRoom">加入房間</button>
-                <button class="back-button" id="btnBackFromJoin">返回</button>
+                <button id="btnJoinRoom"><span id="textBtnJoinRoom">加入房間</span></button>
+                <button class="back-button" id="btnBackFromJoin"><span id="textBtnBack2">返回</span></button>
             </div>
         </div>
         
         <!-- 等待室 -->
         <div id="lobbyScreen" class="menu-screen">
             <div class="room-code">
-                <h3>房間代碼</h3>
+                <h3 id="textRoomCodeTitle">房間代碼</h3>
                 <div class="code" id="displayRoomCode"></div>
-                <p style="margin-top: 10px; color: #666;">分享此代碼給朋友加入遊戲</p>
+                <p id="textShareCode" style="margin-top: 10px; color: #666;">分享此代碼給朋友加入遊戲</p>
             </div>
-            
+
             <div class="players-list">
-                <h3>已加入玩家 (<span id="playerCount">0</span>/10)</h3>
+                <h3><span id="textPlayersJoined">已加入玩家</span> (<span id="playerCount">0</span>/10)</h3>
                 <div id="playersList"></div>
             </div>
-            
+
             <div class="status-message info">
-                等待其他玩家加入... (至少需要2位玩家)
+                <span id="textWaitingMessage">等待其他玩家加入... (至少需要2位玩家)</span>
             </div>
-            
-            <button id="startButton" disabled>開始遊戲</button>
-            <button class="back-button" id="btnLeaveLobby">離開房間</button>
+
+            <button id="startButton" disabled><span id="textBtnStart">開始遊戲</span></button>
+            <button class="back-button" id="btnLeaveLobby"><span id="textBtnLeaveLobby">離開房間</span></button>
         </div>
         
         <!-- 遊戲畫面 -->
         <div id="gameScreen" class="game-screen">
             <div class="info-panel" id="gameInfoPanel"></div>
-            
+
             <canvas id="gameCanvas" width="1000" height="800"></canvas>
-            
+
             <div class="game-controls">
-                <p style="margin-bottom: 10px; color: #666;">
+                <p id="textControls" style="margin-bottom: 10px; color: #666;">
                     使用方向鍵 ↑ ↓ ← → 或 W A S D 移動
                 </p>
-                <button class="back-button" id="btnLeaveGame">離開遊戲</button>
+                <button id="btnToggleSound" style="margin-bottom: 10px;"><span id="textSoundToggle">🔊 音效：開啟</span></button>
+                <button class="back-button" id="btnLeaveGame"><span id="textBtnLeaveGame">離開遊戲</span></button>
             </div>
         </div>
     </div>
@@ -316,6 +350,201 @@
             // 不顯示 alert，讓測試繼續
         }
 
+        // ===========================================
+        // 🌐 雙語系統 (Traditional Chinese / English)
+        // ===========================================
+        const translations = {
+            'zh-TW': {
+                // Page title
+                pageTitle: '線上多人小精靈遊戲 (10人版)',
+                mainTitle: '🎮 線上多人小精靈 (最多10人) 🎮',
+
+                // Menu buttons
+                btnCreate: '🎯 建立遊戲房間',
+                btnJoin: '🚪 加入遊戲房間',
+                btnCreateRoom: '建立房間',
+                btnJoinRoom: '加入房間',
+                btnBack: '返回',
+                btnStart: '開始遊戲',
+                btnLeaveLobby: '離開房間',
+                btnLeaveGame: '離開遊戲',
+
+                // Labels
+                labelNickname: '你的暱稱：',
+                labelRoomCode: '房間代碼：',
+                placeholderNickname: '輸入你的暱稱',
+                placeholderRoomCode: '輸入6位數房間代碼',
+
+                // Lobby
+                roomCodeTitle: '房間代碼',
+                shareCode: '分享此代碼給朋友加入遊戲',
+                playersJoined: '已加入玩家',
+                waitingMessage: '等待其他玩家加入... (至少需要2位玩家)',
+
+                // Game controls
+                controls: '使用方向鍵 ↑ ↓ ← → 或 W A S D 移動',
+                soundOn: '🔊 音效：開啟',
+                soundOff: '🔇 音效：關閉',
+
+                // Player info
+                you: '(你)',
+                score: '分數',
+                points: '分',
+
+                // Alerts
+                alertEnterNickname: '請輸入你的暱稱',
+                alertFirebaseNotConfigured: 'Firebase 未正確配置，無法建立房間',
+                alertDemoModeCreate: '⚠️ 演示模式\n\nFirebase 未配置，無法真正建立線上房間。\n這只是界面演示。\n\n要啟用真正的多人連線，請依照 README 配置 Firebase。',
+                alertDemoModeJoin: '⚠️ 演示模式\n\nFirebase 未配置，無法加入線上房間。\n\n要啟用真正的多人連線，請依照 README 配置 Firebase。',
+                alertFirebaseNotConfiguredJoin: 'Firebase 未正確配置，無法加入房間',
+                alertRoomNotFound: '房間不存在，請檢查房間代碼',
+                alertInvalidRoomCode: '請輸入正確的6位數房間代碼',
+                alertRoomFull: '房間已滿 (最多10位玩家)',
+                alertGameStarted: '遊戲已經開始，無法加入',
+                alertRoomClosed: '房間已關閉',
+
+                // Canvas text
+                timer: '⏱️',
+                ranking: '🏆 排名',
+                warning30sec: '⚠️ 最後 30 秒！⚠️',
+                gameOver: '🏆 遊戲結束 🏆',
+                autoReturn: '15秒後自動返回大廳，或點擊下方按鈕',
+
+                // Language toggle
+                languageToggle: 'English'
+            },
+            'en': {
+                // Page title
+                pageTitle: 'Online Multiplayer Pacman (10 Players)',
+                mainTitle: '🎮 Online Multiplayer Pacman (Up to 10 Players) 🎮',
+
+                // Menu buttons
+                btnCreate: '🎯 Create Game Room',
+                btnJoin: '🚪 Join Game Room',
+                btnCreateRoom: 'Create Room',
+                btnJoinRoom: 'Join Room',
+                btnBack: 'Back',
+                btnStart: 'Start Game',
+                btnLeaveLobby: 'Leave Room',
+                btnLeaveGame: 'Leave Game',
+
+                // Labels
+                labelNickname: 'Your Nickname:',
+                labelRoomCode: 'Room Code:',
+                placeholderNickname: 'Enter your nickname',
+                placeholderRoomCode: 'Enter 6-digit room code',
+
+                // Lobby
+                roomCodeTitle: 'Room Code',
+                shareCode: 'Share this code with friends to join the game',
+                playersJoined: 'Players Joined',
+                waitingMessage: 'Waiting for other players... (At least 2 players needed)',
+
+                // Game controls
+                controls: 'Use Arrow Keys ↑ ↓ ← → or W A S D to move',
+                soundOn: '🔊 Sound: ON',
+                soundOff: '🔇 Sound: OFF',
+
+                // Player info
+                you: '(You)',
+                score: 'Score',
+                points: 'pts',
+
+                // Alerts
+                alertEnterNickname: 'Please enter your nickname',
+                alertFirebaseNotConfigured: 'Firebase is not properly configured, cannot create room',
+                alertDemoModeCreate: '⚠️ Demo Mode\n\nFirebase is not configured, cannot create online room.\nThis is just a UI demo.\n\nTo enable real multiplayer, please configure Firebase according to the README.',
+                alertDemoModeJoin: '⚠️ Demo Mode\n\nFirebase is not configured, cannot join online room.\n\nTo enable real multiplayer, please configure Firebase according to the README.',
+                alertFirebaseNotConfiguredJoin: 'Firebase is not properly configured, cannot join room',
+                alertRoomNotFound: 'Room does not exist, please check the room code',
+                alertInvalidRoomCode: 'Please enter a valid 6-digit room code',
+                alertRoomFull: 'Room is full (Maximum 10 players)',
+                alertGameStarted: 'Game has already started, cannot join',
+                alertRoomClosed: 'Room has been closed',
+
+                // Canvas text
+                timer: '⏱️',
+                ranking: '🏆 Ranking',
+                warning30sec: '⚠️ Last 30 Seconds! ⚠️',
+                gameOver: '🏆 Game Over 🏆',
+                autoReturn: 'Returning to lobby in 15 seconds, or click the button below',
+
+                // Language toggle
+                languageToggle: '中文'
+            }
+        };
+
+        // Get current language from localStorage or default to 'zh-TW'
+        let currentLanguage = localStorage.getItem('gameLanguage') || 'zh-TW';
+
+        // Get translated text
+        function t(key) {
+            return translations[currentLanguage][key] || translations['zh-TW'][key] || key;
+        }
+
+        // Update all UI text elements
+        function updateUILanguage() {
+            // Update page title
+            document.title = t('pageTitle');
+
+            // Update main elements
+            const elementsToUpdate = {
+                'mainTitle': 'mainTitle',
+                'textBtnCreate': 'btnCreate',
+                'textBtnJoin': 'btnJoin',
+                'labelHostName': 'labelNickname',
+                'labelPlayerName': 'labelNickname',
+                'labelRoomCode': 'labelRoomCode',
+                'textBtnCreateRoom': 'btnCreateRoom',
+                'textBtnJoinRoom': 'btnJoinRoom',
+                'textBtnBack1': 'btnBack',
+                'textBtnBack2': 'btnBack',
+                'textRoomCodeTitle': 'roomCodeTitle',
+                'textShareCode': 'shareCode',
+                'textPlayersJoined': 'playersJoined',
+                'textWaitingMessage': 'waitingMessage',
+                'textBtnStart': 'btnStart',
+                'textBtnLeaveLobby': 'btnLeaveLobby',
+                'textControls': 'controls',
+                'textBtnLeaveGame': 'btnLeaveGame'
+            };
+
+            for (const [elementId, translationKey] of Object.entries(elementsToUpdate)) {
+                const element = document.getElementById(elementId);
+                if (element) {
+                    element.textContent = t(translationKey);
+                }
+            }
+
+            // Update placeholders
+            const placeholderElements = document.querySelectorAll('[data-placeholder-key]');
+            placeholderElements.forEach(element => {
+                const key = element.getAttribute('data-placeholder-key');
+                element.placeholder = t(key);
+            });
+
+            // Update sound toggle button
+            updateSoundButtonText();
+
+            // Update language toggle button
+            document.getElementById('langText').textContent = t('languageToggle');
+        }
+
+        // Update sound button text based on current state
+        function updateSoundButtonText() {
+            const soundBtn = document.getElementById('textSoundToggle');
+            if (soundBtn) {
+                soundBtn.textContent = isSoundEnabled ? t('soundOn') : t('soundOff');
+            }
+        }
+
+        // Toggle language
+        function toggleLanguage() {
+            currentLanguage = currentLanguage === 'zh-TW' ? 'en' : 'zh-TW';
+            localStorage.setItem('gameLanguage', currentLanguage);
+            updateUILanguage();
+        }
+
         // 10種不同顏色
         const playerColors = [
             '#FFD700',  // 金黃色
@@ -329,8 +558,232 @@
             '#FF1493',  // 深粉色
             '#4169E1'   // 皇家藍
         ];
-        
+
+        // ===========================================
+        // 🔊 音效系統（Web Audio API）
+        // ===========================================
+        let audioContext = null;
+        let isSoundEnabled = true;
+
+        // 初始化音效系統
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            // 解鎖音效（某些瀏覽器需要用戶互動）
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+        }
+
+        // 播放音效的通用函數
+        function playSound(frequency, duration, type = 'sine', volume = 0.3) {
+            if (!isSoundEnabled) return;
+
+            try {
+                initAudio();
+
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                oscillator.type = type;
+                oscillator.frequency.value = frequency;
+
+                gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + duration);
+            } catch (error) {
+                console.log('Audio error:', error);
+            }
+        }
+
+        // 1. 吃小豆子音效 (wakawaka)
+        function soundEatDot() {
+            if (!isSoundEnabled) return;
+            try {
+                initAudio();
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+
+                osc.type = 'square';
+                osc.frequency.value = 800;
+
+                gain.gain.setValueAtTime(0.15, audioContext.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.05);
+
+                osc.start(audioContext.currentTime);
+                osc.stop(audioContext.currentTime + 0.05);
+            } catch (e) { console.log('Audio error:', e); }
+        }
+
+        // 2. 吃能量豆音效 (power-up 上升音階)
+        function soundEatPowerPellet() {
+            if (!isSoundEnabled) return;
+            try {
+                initAudio();
+            const notes = [523, 659, 784, 1047]; // C-E-G-C 和弦
+
+                notes.forEach((freq, i) => {
+                    const osc = audioContext.createOscillator();
+                    const gain = audioContext.createGain();
+
+                    osc.connect(gain);
+                    gain.connect(audioContext.destination);
+
+                    osc.type = 'triangle';
+                    osc.frequency.value = freq;
+
+                    const startTime = audioContext.currentTime + i * 0.08;
+                    gain.gain.setValueAtTime(0.25, startTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.2);
+
+                    osc.start(startTime);
+                    osc.stop(startTime + 0.2);
+                });
+            } catch (e) { console.log('Audio error:', e); }
+        }
+
+        // 3. 進入能量模式音效 (變身)
+        function soundPowerMode() {
+            if (!isSoundEnabled) return;
+            try {
+                initAudio();
+
+                // 快速上升音階
+                for (let i = 0; i < 10; i++) {
+                    const osc = audioContext.createOscillator();
+                    const gain = audioContext.createGain();
+
+                    osc.connect(gain);
+                    gain.connect(audioContext.destination);
+
+                    osc.type = 'sawtooth';
+                    osc.frequency.value = 200 + i * 80;
+
+                    const startTime = audioContext.currentTime + i * 0.03;
+                    gain.gain.setValueAtTime(0.2, startTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.1);
+
+                    osc.start(startTime);
+                    osc.stop(startTime + 0.1);
+                }
+            } catch (e) { console.log('Audio error:', e); }
+        }
+
+        // 4. 碰撞音效 (砰)
+        function soundCollision() {
+            if (!isSoundEnabled) return;
+            try {
+                initAudio();
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, audioContext.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(50, audioContext.currentTime + 0.1);
+
+                gain.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+
+                osc.start(audioContext.currentTime);
+                osc.stop(audioContext.currentTime + 0.1);
+            } catch (e) { console.log('Audio error:', e); }
+        }
+
+        // 5. 得分音效 (叮)
+        function soundScore() {
+            if (!isSoundEnabled) return;
+            try {
+                initAudio();
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+
+                osc.type = 'sine';
+                osc.frequency.value = 1200;
+
+                gain.gain.setValueAtTime(0.2, audioContext.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+
+                osc.start(audioContext.currentTime);
+                osc.stop(audioContext.currentTime + 0.15);
+            } catch (e) { console.log('Audio error:', e); }
+        }
+
+        // 6. 能量豆即將結束警告音 (嘟嘟嘟)
+        function soundPowerWarning() {
+            if (!isSoundEnabled) return;
+            try {
+                initAudio();
+
+                for (let i = 0; i < 3; i++) {
+                    const osc = audioContext.createOscillator();
+                    const gain = audioContext.createGain();
+
+                    osc.connect(gain);
+                    gain.connect(audioContext.destination);
+
+                    osc.type = 'square';
+                    osc.frequency.value = 600;
+
+                    const startTime = audioContext.currentTime + i * 0.15;
+                    gain.gain.setValueAtTime(0.15, startTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.08);
+
+                    osc.start(startTime);
+                    osc.stop(startTime + 0.08);
+                }
+            } catch (e) { console.log('Audio error:', e); }
+        }
+
+        // 7. 遊戲倒數音效 (滴答)
+        function soundTick() {
+            playSound(800, 0.05, 'square', 0.15);
+        }
+
+        // 8. 遊戲結束音效 (勝利音樂)
+        function soundGameEnd() {
+            if (!isSoundEnabled) return;
+            try {
+                initAudio();
+                const melody = [523, 659, 784, 1047, 784, 1047, 1319]; // C-E-G-C-G-C-E
+
+                melody.forEach((freq, i) => {
+                    const osc = audioContext.createOscillator();
+                    const gain = audioContext.createGain();
+
+                    osc.connect(gain);
+                    gain.connect(audioContext.destination);
+
+                    osc.type = 'sine';
+                    osc.frequency.value = freq;
+
+                    const startTime = audioContext.currentTime + i * 0.15;
+                    gain.gain.setValueAtTime(0.25, startTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.3);
+
+                    osc.start(startTime);
+                    osc.stop(startTime + 0.3);
+                });
+            } catch (e) { console.log('Audio error:', e); }
+        }
+
+        // ===========================================
         // 遊戲狀態
+        // ===========================================
         let currentRoomId = null;
         let currentPlayerId = null;
         let isHost = false;
@@ -387,30 +840,30 @@
             console.log('createRoom function called');
             const hostName = document.getElementById('hostName').value.trim();
             console.log('Host name:', hostName);
-            
+
             if (!hostName) {
-                alert('請輸入你的暱稱');
+                alert(t('alertEnterNickname'));
                 return;
             }
-            
+
             console.log('Database status:', database ? 'Available' : 'Not available');
-            
+
             if (!database) {
-                alert('Firebase 未正確配置，無法建立房間');
+                alert(t('alertFirebaseNotConfigured'));
                 return;
             }
-            
+
             console.log('Creating room...');
-            
+
             const roomCode = generateRoomCode();
             currentRoomId = roomCode;
             currentPlayerId = 'player_' + Date.now();
             isHost = true;
-            
+
             // 演示模式 - 直接切換到等待室
             if (isDemo) {
                 console.log('Demo mode - switching to lobby');
-                alert('⚠️ 演示模式\n\nFirebase 未配置，無法真正建立線上房間。\n這只是界面演示。\n\n要啟用真正的多人連線，請依照 README 配置 Firebase。');
+                alert(t('alertDemoModeCreate'));
                 document.getElementById('menuScreen').classList.remove('active');
                 document.getElementById('lobbyScreen').classList.add('active');
                 document.getElementById('displayRoomCode').textContent = roomCode;
@@ -418,7 +871,7 @@
                 document.getElementById('playersList').innerHTML = `
                     <div class="player-item" style="background: ${playerColors[0]}20; border: 2px solid ${playerColors[0]}">
                         <div class="player-color-dot" style="background: ${playerColors[0]}"></div>
-                        <span style="color: #333">${hostName} (你)</span>
+                        <span style="color: #333">${hostName} ${t('you')}</span>
                     </div>
                 `;
                 return;
@@ -464,51 +917,51 @@
             console.log('joinRoom function called');
             const playerName = document.getElementById('playerName').value.trim();
             const roomCode = document.getElementById('roomCode').value.trim().toUpperCase();
-            
+
             console.log('Player name:', playerName);
             console.log('Room code:', roomCode);
-            
+
             if (!playerName) {
-                alert('請輸入你的暱稱');
+                alert(t('alertEnterNickname'));
                 return;
             }
-            
+
             if (!roomCode || roomCode.length !== 6) {
-                alert('請輸入正確的6位數房間代碼');
+                alert(t('alertInvalidRoomCode'));
                 return;
             }
-            
+
             if (isDemo) {
-                alert('⚠️ 演示模式\n\nFirebase 未配置，無法加入線上房間。\n\n要啟用真正的多人連線，請依照 README 配置 Firebase。');
+                alert(t('alertDemoModeJoin'));
                 return;
             }
-            
+
             console.log('Database status:', database ? 'Available' : 'Not available');
-            
+
             if (!database) {
-                alert('Firebase 未正確配置，無法加入房間');
+                alert(t('alertFirebaseNotConfiguredJoin'));
                 return;
             }
-            
+
             // 檢查房間是否存在
             const roomRef = database.ref(`rooms/${roomCode}`);
             const snapshot = await roomRef.once('value');
-            
+
             if (!snapshot.exists()) {
-                alert('房間不存在，請檢查房間代碼');
+                alert(t('alertRoomNotFound'));
                 return;
             }
-            
+
             const roomData = snapshot.val();
             const playerCount = roomData.players ? Object.keys(roomData.players).length : 0;
-            
+
             if (playerCount >= 10) {
-                alert('房間已滿 (最多10位玩家)');
+                alert(t('alertRoomFull'));
                 return;
             }
-            
+
             if (roomData.status === 'playing') {
-                alert('遊戲已經開始，無法加入');
+                alert(t('alertGameStarted'));
                 return;
             }
             
@@ -543,12 +996,12 @@
         // 監聽房間變化
         function listenToRoom() {
             const roomRef = database.ref(`rooms/${currentRoomId}`);
-            
+
             roomRef.on('value', (snapshot) => {
                 const data = snapshot.val();
-                
+
                 if (!data) {
-                    alert('房間已關閉');
+                    alert(t('alertRoomClosed'));
                     window.location.reload();
                     return;
                 }
@@ -576,24 +1029,24 @@
         function updatePlayersList(players) {
             const playersList = document.getElementById('playersList');
             const playerCount = document.getElementById('playerCount');
-            
+
             playerCount.textContent = Object.keys(players).length;
             playersList.innerHTML = '';
-            
+
             Object.entries(players).forEach(([id, player]) => {
                 const div = document.createElement('div');
                 div.className = 'player-item';
                 div.style.background = player.color + '20';
                 div.style.border = `2px solid ${player.color}`;
-                
+
                 const dot = document.createElement('div');
                 dot.className = 'player-color-dot';
                 dot.style.background = player.color;
-                
+
                 const name = document.createElement('span');
-                name.textContent = `${player.name} ${id === currentPlayerId ? '(你)' : ''}`;
+                name.textContent = `${player.name} ${id === currentPlayerId ? t('you') : ''}`;
                 name.style.color = '#333';
-                
+
                 div.appendChild(dot);
                 div.appendChild(name);
                 playersList.appendChild(div);
@@ -626,19 +1079,17 @@
                 maze[y] = [];
                 for (let x = 0; x < COLS; x++) {
                     if (x === 0 || x === COLS - 1 || y === 0 || y === ROWS - 1) {
-                        maze[y][x] = 1;
+                        maze[y][x] = 1; // 邊界牆
                     } else if (Math.random() < 0.12 && (x % 3 === 0 && y % 3 === 0)) {
-                        maze[y][x] = 1;
-                    } else if (Math.random() < 0.04) {
-                        maze[y][x] = 3;
+                        maze[y][x] = 1; // 內部牆壁
                     } else if (Math.random() < 0.65) {
-                        maze[y][x] = 2;
+                        maze[y][x] = 2; // 小豆子（65% 概率）
                     } else {
-                        maze[y][x] = 0;
+                        maze[y][x] = 0; // 空地
                     }
                 }
             }
-            
+
             // 確保起始位置周圍沒有牆
             startPositions.forEach(pos => {
                 for (let dy = -2; dy <= 2; dy++) {
@@ -651,7 +1102,30 @@
                     }
                 }
             });
-            
+
+            // 🎯 固定放置 4 個能量豆（地圖四角）
+            const powerPelletPositions = [
+                { x: 5, y: 5 },                    // 左上角
+                { x: COLS - 6, y: 5 },             // 右上角
+                { x: 5, y: ROWS - 6 },             // 左下角
+                { x: COLS - 6, y: ROWS - 6 }       // 右下角
+            ];
+
+            powerPelletPositions.forEach(pos => {
+                // 清空能量豆周圍區域（3x3），確保可達
+                for (let dy = -1; dy <= 1; dy++) {
+                    for (let dx = -1; dx <= 1; dx++) {
+                        const ny = pos.y + dy;
+                        const nx = pos.x + dx;
+                        if (ny >= 0 && ny < ROWS && nx >= 0 && nx < COLS) {
+                            if (maze[ny][nx] === 1) maze[ny][nx] = 0; // 移除牆壁
+                        }
+                    }
+                }
+                // 放置能量豆
+                maze[pos.y][pos.x] = 3;
+            });
+
             return maze;
         }
         
@@ -676,14 +1150,14 @@
         function updateInfoPanel(players) {
             const panel = document.getElementById('gameInfoPanel');
             panel.innerHTML = '';
-            
+
             Object.entries(players).forEach(([id, player]) => {
                 const div = document.createElement('div');
                 div.className = 'player-info';
                 div.style.background = `linear-gradient(135deg, ${player.color} 0%, ${player.color}CC 100%)`;
                 div.innerHTML = `
-                    <div style="font-size: 0.85em;">${player.name}${id === currentPlayerId ? ' (你)' : ''}</div>
-                    <div>分數: <span id="score-${id}">${player.score || 0}</span></div>
+                    <div style="font-size: 0.85em;">${player.name}${id === currentPlayerId ? ' ' + t('you') : ''}</div>
+                    <div>${t('score')}: <span id="score-${id}">${player.score || 0}</span></div>
                 `;
                 panel.appendChild(div);
             });
@@ -734,17 +1208,129 @@
                         if (gameState.maze[newY][newX] === 2) {
                             updates.score = (player.score || 0) + 10;
                             await database.ref(`rooms/${currentRoomId}/maze/${newY}/${newX}`).set(0);
+                            soundEatDot(); // 🔊 吃豆子音效
                         } else if (gameState.maze[newY][newX] === 3) {
+                            // 吃到能量豆：加分 + 進入 power mode
                             updates.score = (player.score || 0) + 50;
+                            updates.powerMode = true;
+                            updates.powerEndTime = Date.now() + 15000; // 15秒 power mode
                             await database.ref(`rooms/${currentRoomId}/maze/${newY}/${newX}`).set(0);
+                            soundEatPowerPellet(); // 🔊 吃能量豆音效
+                            setTimeout(() => soundPowerMode(), 320); // 🔊 變身音效（延遲播放）
                         }
                         
                         await playerRef.update(updates);
+
+                        // 檢查碰撞（移動後）
+                        checkCollision(newX, newY);
                     }
                 }
             });
         }
-        
+
+        // 檢查玩家碰撞並執行搶分
+        async function checkCollision(myX, myY) {
+            if (!gameState || !gameState.players || !currentPlayerId) return;
+
+            const myPlayer = gameState.players[currentPlayerId];
+            if (!myPlayer) return;
+
+            const now = Date.now();
+            const myPowerMode = myPlayer.powerMode && myPlayer.powerEndTime && now < myPlayer.powerEndTime;
+
+            // 遍歷所有其他玩家
+            for (const [otherId, otherPlayer] of Object.entries(gameState.players)) {
+                if (otherId === currentPlayerId) continue; // 跳過自己
+
+                // 檢查位置是否重疊（同一格或相鄰）
+                const distance = Math.abs(myX - otherPlayer.x) + Math.abs(myY - otherPlayer.y);
+                if (distance <= 1) { // 碰撞！
+                    const otherPowerMode = otherPlayer.powerMode && otherPlayer.powerEndTime && now < otherPlayer.powerEndTime;
+
+                    let myScoreChange = 0;
+                    let otherScoreChange = 0;
+
+                    // 判斷搶分規則
+                    if (myPowerMode && !otherPowerMode) {
+                        // 我在 power mode，對方不在：搶 50%
+                        const stolen = Math.floor((otherPlayer.score || 0) * 0.5);
+                        myScoreChange = stolen;
+                        otherScoreChange = -stolen;
+                        showScoreFloating(myX, myY, `+${stolen}`, '#00FF00');
+                        showScoreFloating(otherPlayer.x, otherPlayer.y, `-${stolen}`, '#FF0000');
+                        soundCollision(); // 🔊 碰撞音效
+                        if (stolen > 0) soundScore(); // 🔊 得分音效
+                    } else if (!myPowerMode && otherPowerMode) {
+                        // 對方在 power mode，我不在：被搶 50%
+                        const stolen = Math.floor((myPlayer.score || 0) * 0.5);
+                        myScoreChange = -stolen;
+                        otherScoreChange = stolen;
+                        showScoreFloating(myX, myY, `-${stolen}`, '#FF0000');
+                        soundCollision(); // 🔊 碰撞音效
+                    } else if (myPowerMode && otherPowerMode) {
+                        // 雙方都在 power mode：彈開，不搶分
+                        console.log('Both in power mode - bounce!');
+                        soundCollision(); // 🔊 碰撞音效
+                        return;
+                    } else {
+                        // 雙方都不在 power mode：分數高者搶 20%
+                        const myScore = myPlayer.score || 0;
+                        const otherScore = otherPlayer.score || 0;
+
+                        if (myScore > otherScore) {
+                            const stolen = Math.floor(otherScore * 0.2);
+                            myScoreChange = stolen;
+                            otherScoreChange = -stolen;
+                            showScoreFloating(myX, myY, `+${stolen}`, '#00FF00');
+                            showScoreFloating(otherPlayer.x, otherPlayer.y, `-${stolen}`, '#FF0000');
+                            soundCollision(); // 🔊 碰撞音效
+                            if (stolen > 0) soundScore(); // 🔊 得分音效
+                        } else if (otherScore > myScore) {
+                            const stolen = Math.floor(myScore * 0.2);
+                            myScoreChange = -stolen;
+                            otherScoreChange = stolen;
+                            showScoreFloating(myX, myY, `-${stolen}`, '#FF0000');
+                            soundCollision(); // 🔊 碰撞音效
+                        } else {
+                            // 分數相等：只有碰撞音效
+                            soundCollision(); // 🔊 碰撞音效
+                        }
+                    }
+
+                    // 更新分數（確保不會變成負數）
+                    if (myScoreChange !== 0) {
+                        const newScore = Math.max(0, (myPlayer.score || 0) + myScoreChange);
+                        await database.ref(`rooms/${currentRoomId}/players/${currentPlayerId}/score`).set(newScore);
+                    }
+                    if (otherScoreChange !== 0) {
+                        const newOtherScore = Math.max(0, (otherPlayer.score || 0) + otherScoreChange);
+                        await database.ref(`rooms/${currentRoomId}/players/${otherId}/score`).set(newOtherScore);
+                    }
+
+                    break; // 只處理第一個碰撞
+                }
+            }
+        }
+
+        // 分數飄字動畫數據
+        let floatingTexts = [];
+
+        // 添加分數飄字
+        function showScoreFloating(x, y, text, color) {
+            floatingTexts.push({
+                x: x * CELL_SIZE + CELL_SIZE / 2,
+                y: y * CELL_SIZE - 20,
+                text: text,
+                color: color,
+                alpha: 1.0,
+                createdAt: Date.now()
+            });
+        }
+
+        // 音效控制變量
+        let lastTickSecond = -1;
+        let powerWarningPlayed = {}; // 追蹤每個玩家是否已播放警告音
+
         // 更新遊戲狀態
         function updateGameState(data) {
             gameState = data;
@@ -763,10 +1349,64 @@
         // 遊戲循環
         function gameLoop() {
             if (!gameState) return;
-            
+
+            const now = Date.now();
+
+            // 計算遊戲剩餘時間（3分鐘 = 180秒）
+            const GAME_DURATION = 180 * 1000; // 3分鐘（毫秒）
+            const elapsed = now - (gameState.startedAt || now);
+            const remaining = Math.max(0, GAME_DURATION - elapsed);
+            const remainingSeconds = Math.ceil(remaining / 1000);
+            const isLastThirty = remainingSeconds <= 30 && remainingSeconds > 0;
+
+            // 檢查遊戲是否結束
+            if (remaining === 0 && gameState.status === 'playing' && isHost && database) {
+                // 時間到！結束遊戲
+                database.ref(`rooms/${currentRoomId}`).update({
+                    status: 'finished',
+                    finishedAt: now
+                });
+                showGameResults();
+                return;
+            }
+
+            // 🔊 最後30秒倒數音效（每秒一次）
+            if (isLastThirty && remainingSeconds !== lastTickSecond) {
+                lastTickSecond = remainingSeconds;
+                soundTick();
+            }
+
+            // 檢查並清除過期的 power mode + 警告音
+            if (gameState.players && database) {
+                Object.entries(gameState.players).forEach(([id, player]) => {
+                    if (player.powerMode && player.powerEndTime && now >= player.powerEndTime) {
+                        // power mode 已過期，清除狀態
+                        database.ref(`rooms/${currentRoomId}/players/${id}`).update({
+                            powerMode: false,
+                            powerEndTime: null
+                        });
+                        // 清除警告音標記
+                        delete powerWarningPlayed[id];
+                    } else if (player.powerMode && player.powerEndTime) {
+                        // 🔊 檢查是否需要播放警告音（最後5秒，且該玩家是自己）
+                        const timeLeft = (player.powerEndTime - now) / 1000;
+                        if (timeLeft <= 5 && timeLeft > 4.5 && id === currentPlayerId && !powerWarningPlayed[id]) {
+                            soundPowerWarning();
+                            powerWarningPlayed[id] = true;
+                        }
+                    }
+                });
+            }
+
             // 清空畫布
             ctx.fillStyle = '#000';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 最後30秒背景閃爍警告
+            if (isLastThirty && Math.floor(now / 500) % 2 === 0) {
+                ctx.fillStyle = 'rgba(255, 0, 0, 0.1)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
             
             // 繪製迷宮
             if (gameState.maze) {
@@ -797,39 +1437,373 @@
             
             // 繪製玩家
             if (gameState.players) {
+                const now = Date.now();
                 Object.entries(gameState.players).forEach(([id, player]) => {
-                    ctx.fillStyle = player.color;
-                    ctx.beginPath();
-                    ctx.arc(
-                        player.x * CELL_SIZE + CELL_SIZE / 2,
-                        player.y * CELL_SIZE + CELL_SIZE / 2,
-                        CELL_SIZE / 2 - 2, 0, Math.PI * 2
-                    );
-                    ctx.fill();
-                    
-                    // 眼睛
-                    ctx.fillStyle = '#000';
-                    ctx.beginPath();
-                    ctx.arc(player.x * CELL_SIZE + CELL_SIZE / 2 - 3, player.y * CELL_SIZE + CELL_SIZE / 2 - 2, 2, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.beginPath();
-                    ctx.arc(player.x * CELL_SIZE + CELL_SIZE / 2 + 3, player.y * CELL_SIZE + CELL_SIZE / 2 - 2, 2, 0, Math.PI * 2);
-                    ctx.fill();
-                    
-                    // 名字
+                    const centerX = player.x * CELL_SIZE + CELL_SIZE / 2;
+                    const centerY = player.y * CELL_SIZE + CELL_SIZE / 2;
+
+                    // 檢查是否在 power mode
+                    const isPowerMode = player.powerMode && player.powerEndTime && now < player.powerEndTime;
+                    const timeRemaining = isPowerMode ? (player.powerEndTime - now) / 1000 : 0;
+                    const isWarning = timeRemaining > 0 && timeRemaining <= 5; // 最後5秒警告
+                    const shouldFlash = isWarning && Math.floor(now / 200) % 2 === 0; // 200ms閃爍
+
+                    // Power mode 視覺效果
+                    if (isPowerMode && !shouldFlash) {
+                        const baseRadius = CELL_SIZE / 2 - 2;
+                        const powerRadius = baseRadius * 1.2; // 變大 1.2 倍
+
+                        // 彩虹光暈效果（多層漸變圓）
+                        const hue = (now / 50) % 360; // 彩虹色相旋轉
+
+                        // 外層光暈
+                        for (let i = 3; i >= 0; i--) {
+                            const gradient = ctx.createRadialGradient(
+                                centerX, centerY, powerRadius,
+                                centerX, centerY, powerRadius + 6 + i * 2
+                            );
+                            gradient.addColorStop(0, `hsla(${(hue + i * 30) % 360}, 100%, 50%, 0.4)`);
+                            gradient.addColorStop(1, `hsla(${(hue + i * 30) % 360}, 100%, 50%, 0)`);
+
+                            ctx.fillStyle = gradient;
+                            ctx.beginPath();
+                            ctx.arc(centerX, centerY, powerRadius + 8 + i * 2, 0, Math.PI * 2);
+                            ctx.fill();
+                        }
+
+                        // 玩家本體（更大）
+                        ctx.fillStyle = player.color;
+                        ctx.beginPath();
+                        ctx.arc(centerX, centerY, powerRadius, 0, Math.PI * 2);
+                        ctx.fill();
+
+                        // 眼睛（放大）
+                        ctx.fillStyle = '#000';
+                        ctx.beginPath();
+                        ctx.arc(centerX - 4, centerY - 3, 2.5, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.beginPath();
+                        ctx.arc(centerX + 4, centerY - 3, 2.5, 0, Math.PI * 2);
+                        ctx.fill();
+
+                        // 能量豆倒數提示（最後5秒）
+                        if (isWarning) {
+                            ctx.fillStyle = '#FF0000';
+                            ctx.font = 'bold 10px Arial';
+                            ctx.textAlign = 'center';
+                            ctx.fillText(Math.ceil(timeRemaining), centerX, centerY + powerRadius + 15);
+                        }
+                    } else {
+                        // 普通模式或閃爍時顯示普通外觀
+                        const normalRadius = CELL_SIZE / 2 - 2;
+
+                        ctx.fillStyle = player.color;
+                        ctx.beginPath();
+                        ctx.arc(centerX, centerY, normalRadius, 0, Math.PI * 2);
+                        ctx.fill();
+
+                        // 眼睛
+                        ctx.fillStyle = '#000';
+                        ctx.beginPath();
+                        ctx.arc(centerX - 3, centerY - 2, 2, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.beginPath();
+                        ctx.arc(centerX + 3, centerY - 2, 2, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+
+                    // 名字（始終顯示）
                     ctx.fillStyle = player.color;
                     ctx.font = 'bold 9px Arial';
                     ctx.textAlign = 'center';
                     ctx.strokeStyle = '#000';
                     ctx.lineWidth = 2;
-                    ctx.strokeText(player.name, player.x * CELL_SIZE + CELL_SIZE / 2, player.y * CELL_SIZE - 5);
-                    ctx.fillText(player.name, player.x * CELL_SIZE + CELL_SIZE / 2, player.y * CELL_SIZE - 5);
+                    ctx.strokeText(player.name, centerX, player.y * CELL_SIZE - 5);
+                    ctx.fillText(player.name, centerX, player.y * CELL_SIZE - 5);
                 });
             }
-            
+
+            // 繪製計時器（頂部中央）
+            const minutes = Math.floor(remainingSeconds / 60);
+            const seconds = remainingSeconds % 60;
+            const timeText = `⏱️ ${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+            ctx.save();
+            ctx.font = 'bold 32px Arial';
+            ctx.textAlign = 'center';
+
+            // 最後30秒紅色閃爍
+            if (isLastThirty) {
+                const flashIntensity = Math.floor(now / 250) % 2 === 0 ? 1.0 : 0.6;
+                ctx.fillStyle = `rgba(255, 0, 0, ${flashIntensity})`;
+                ctx.strokeStyle = '#FFF';
+            } else {
+                ctx.fillStyle = '#FFF';
+                ctx.strokeStyle = '#000';
+            }
+
+            ctx.lineWidth = 4;
+            ctx.strokeText(timeText, canvas.width / 2, 40);
+            ctx.fillText(timeText, canvas.width / 2, 40);
+            ctx.restore();
+
+            // 最後30秒警告文字
+            if (isLastThirty) {
+                ctx.save();
+                ctx.font = 'bold 20px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillStyle = '#FF0000';
+                ctx.strokeStyle = '#FFF';
+                ctx.lineWidth = 3;
+                const warningText = t('warning30sec');
+                ctx.strokeText(warningText, canvas.width / 2, 70);
+                ctx.fillText(warningText, canvas.width / 2, 70);
+                ctx.restore();
+            }
+
+            // 🏆 繪製即時排名（右上角）
+            if (gameState.players) {
+                // 計算排名
+                const rankings = Object.entries(gameState.players)
+                    .map(([id, player]) => ({
+                        id,
+                        name: player.name,
+                        color: player.color,
+                        score: player.score || 0
+                    }))
+                    .sort((a, b) => b.score - a.score);
+
+                // 找到自己的排名
+                const myRank = rankings.findIndex(p => p.id === currentPlayerId);
+                const isInTop3 = myRank < 3;
+
+                // 背景框
+                const boxX = canvas.width - 220;
+                const boxY = 95;
+                const boxWidth = 210;
+                const boxHeight = isInTop3 ? 145 : 200; // 如果不在前3，多顯示自己
+
+                ctx.save();
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+                ctx.fillRect(boxX, boxY, boxWidth, boxHeight);
+                ctx.strokeStyle = '#FFD700';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(boxX, boxY, boxWidth, boxHeight);
+
+                // 標題
+                ctx.font = 'bold 20px Arial';
+                ctx.textAlign = 'left';
+                ctx.fillStyle = '#FFD700';
+                ctx.fillText(t('ranking'), boxX + 10, boxY + 28);
+
+                // 顯示前3名
+                let yPos = boxY + 60;
+                const topPlayers = rankings.slice(0, 3);
+
+                topPlayers.forEach((player, index) => {
+                    const isMe = player.id === currentPlayerId;
+                    const rank = index + 1;
+
+                    // 高亮自己
+                    if (isMe) {
+                        ctx.fillStyle = 'rgba(255, 215, 0, 0.2)';
+                        ctx.fillRect(boxX + 5, yPos - 20, boxWidth - 10, 28);
+                    }
+
+                    // 排名
+                    ctx.font = 'bold 16px Arial';
+                    ctx.textAlign = 'left';
+                    ctx.fillStyle = rank === 1 ? '#FFD700' : rank === 2 ? '#C0C0C0' : '#CD7F32';
+                    ctx.fillText(`#${rank}`, boxX + 15, yPos);
+
+                    // 玩家顏色點
+                    ctx.fillStyle = player.color;
+                    ctx.beginPath();
+                    ctx.arc(boxX + 50, yPos - 5, 6, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // 玩家名字
+                    ctx.font = 'bold 14px Arial';
+                    ctx.fillStyle = '#FFF';
+                    ctx.textAlign = 'left';
+                    const displayName = player.name.length > 8 ? player.name.substring(0, 7) + '...' : player.name;
+                    ctx.fillText(displayName + (isMe ? ' ' + t('you') : ''), boxX + 62, yPos);
+
+                    // 分數
+                    ctx.textAlign = 'right';
+                    ctx.fillStyle = '#FFD700';
+                    ctx.fillText(player.score.toString(), boxX + boxWidth - 15, yPos);
+
+                    yPos += 30;
+                });
+
+                // 如果自己不在前3，顯示分隔線 + 自己的排名
+                if (!isInTop3 && myRank >= 0) {
+                    // 分隔線
+                    ctx.strokeStyle = '#666';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(boxX + 10, yPos + 5);
+                    ctx.lineTo(boxX + boxWidth - 10, yPos + 5);
+                    ctx.stroke();
+
+                    yPos += 25;
+
+                    const myPlayer = rankings[myRank];
+
+                    // 高亮背景
+                    ctx.fillStyle = 'rgba(255, 215, 0, 0.3)';
+                    ctx.fillRect(boxX + 5, yPos - 20, boxWidth - 10, 28);
+
+                    // 我的排名
+                    ctx.font = 'bold 16px Arial';
+                    ctx.textAlign = 'left';
+                    ctx.fillStyle = '#FFD700';
+                    ctx.fillText(`#${myRank + 1}`, boxX + 15, yPos);
+
+                    // 玩家顏色點
+                    ctx.fillStyle = myPlayer.color;
+                    ctx.beginPath();
+                    ctx.arc(boxX + 50, yPos - 5, 6, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // 玩家名字
+                    ctx.font = 'bold 14px Arial';
+                    ctx.fillStyle = '#FFF';
+                    ctx.textAlign = 'left';
+                    const displayName = myPlayer.name.length > 8 ? myPlayer.name.substring(0, 7) + '...' : myPlayer.name;
+                    ctx.fillText(displayName + ' ' + t('you'), boxX + 62, yPos);
+
+                    // 分數
+                    ctx.textAlign = 'right';
+                    ctx.fillStyle = '#FFD700';
+                    ctx.fillText(myPlayer.score.toString(), boxX + boxWidth - 15, yPos);
+                }
+
+                ctx.restore();
+            }
+
+            // 繪製分數飄字動畫
+            floatingTexts = floatingTexts.filter(ft => {
+                const elapsed = now - ft.createdAt;
+                if (elapsed > 1500) return false; // 1.5秒後移除
+
+                // 計算動畫參數
+                ft.y -= 0.5; // 向上飄
+                ft.alpha = Math.max(0, 1 - elapsed / 1500); // 淡出
+
+                // 繪製
+                ctx.save();
+                ctx.globalAlpha = ft.alpha;
+                ctx.fillStyle = ft.color;
+                ctx.font = 'bold 14px Arial';
+                ctx.textAlign = 'center';
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 3;
+                ctx.strokeText(ft.text, ft.x, ft.y);
+                ctx.fillText(ft.text, ft.x, ft.y);
+                ctx.restore();
+
+                return true; // 保留
+            });
+
             requestAnimationFrame(gameLoop);
         }
         
+        // 顯示遊戲結算畫面
+        function showGameResults() {
+            if (!gameState || !gameState.players) return;
+
+            // 🔊 遊戲結束音效
+            soundGameEnd();
+
+            // 保存玩家數據後停止遊戲循環
+            const finalPlayers = gameState.players;
+            gameState = null;
+
+            // 計算排名
+            const rankings = Object.entries(finalPlayers || {})
+                .map(([id, player]) => ({
+                    id,
+                    name: player.name,
+                    color: player.color,
+                    score: player.score || 0
+                }))
+                .sort((a, b) => b.score - a.score);
+
+            // 清空畫布
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 繪製標題
+            ctx.save();
+            ctx.font = 'bold 48px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillStyle = '#FFD700';
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 5;
+            ctx.strokeText(t('gameOver'), canvas.width / 2, 80);
+            ctx.fillText(t('gameOver'), canvas.width / 2, 80);
+            ctx.restore();
+
+            // 繪製排名
+            let startY = 150;
+            const medals = ['🥇', '🥈', '🥉'];
+
+            rankings.forEach((player, index) => {
+                const isMe = player.id === currentPlayerId;
+                const y = startY + index * 60;
+
+                // 背景（自己的排名高亮）
+                if (isMe) {
+                    ctx.fillStyle = 'rgba(255, 215, 0, 0.2)';
+                    ctx.fillRect(canvas.width / 2 - 300, y - 35, 600, 55);
+                }
+
+                // 排名數字或獎牌
+                ctx.save();
+                ctx.font = 'bold 32px Arial';
+                ctx.textAlign = 'right';
+                ctx.fillStyle = '#FFF';
+
+                const rankText = index < 3 ? medals[index] : `#${index + 1}`;
+                ctx.fillText(rankText, canvas.width / 2 - 200, y);
+
+                // 玩家顏色點
+                ctx.fillStyle = player.color;
+                ctx.beginPath();
+                ctx.arc(canvas.width / 2 - 160, y - 10, 15, 0, Math.PI * 2);
+                ctx.fill();
+
+                // 玩家名字
+                ctx.font = 'bold 28px Arial';
+                ctx.textAlign = 'left';
+                ctx.fillStyle = '#FFF';
+                const nameText = `${player.name}${isMe ? ' ' + t('you') : ''}`;
+                ctx.fillText(nameText, canvas.width / 2 - 130, y);
+
+                // 分數
+                ctx.textAlign = 'right';
+                ctx.fillStyle = '#FFD700';
+                ctx.fillText(`${player.score} ${t('points')}`, canvas.width / 2 + 250, y);
+
+                ctx.restore();
+            });
+
+            // 繪製提示文字
+            ctx.save();
+            ctx.font = 'bold 20px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillStyle = '#AAA';
+            ctx.fillText(t('autoReturn'), canvas.width / 2, canvas.height - 50);
+            ctx.restore();
+
+            // 15秒後自動返回大廳
+            setTimeout(() => {
+                window.location.reload();
+            }, 15000);
+        }
+
         // 離開房間
         async function leaveRoom() {
             if (currentRoomId && currentPlayerId && database) {
@@ -876,7 +1850,23 @@
             document.getElementById('startButton').addEventListener('click', startGame);
             document.getElementById('btnLeaveLobby').addEventListener('click', leaveRoom);
             document.getElementById('btnLeaveGame').addEventListener('click', leaveRoom);
-            
+
+            // 音效開關
+            document.getElementById('btnToggleSound').addEventListener('click', function() {
+                isSoundEnabled = !isSoundEnabled;
+                updateSoundButtonText();
+                // 測試音效
+                if (isSoundEnabled) soundEatDot();
+            });
+
+            // 語言切換按鈕
+            document.getElementById('languageToggle').addEventListener('click', function() {
+                toggleLanguage();
+            });
+
+            // 初始化語言設定
+            updateUILanguage();
+
             // Enter 鍵支持
             document.getElementById('hostName').addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') createRoom();
