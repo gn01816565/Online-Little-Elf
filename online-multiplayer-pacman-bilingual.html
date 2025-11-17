@@ -305,11 +305,12 @@
                 <div id="playersList"></div>
             </div>
 
+            <button id="addBotButton" data-i18n="addBot" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%) !important; display: block !important; margin: 20px auto !important; width: 80% !important; padding: 15px 30px !important; font-size: 1.2em !important; border-radius: 25px !important; color: white !important; border: none !important; cursor: pointer !important; font-weight: bold !important;">🤖 新增電腦玩家</button>
+
             <div class="status-message info">
                 <span id="waitingMessage" data-i18n="waitingPlayers">等待其他玩家加入... (至少需要2位玩家)</span>
             </div>
 
-            <button id="addBotButton" data-i18n="addBot" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">🤖 新增電腦玩家</button>
             <button id="startButton" data-i18n="startGame" disabled>開始遊戲</button>
             <button class="back-button" id="btnLeaveLobby" data-i18n="leaveRoom">離開房間</button>
         </div>
@@ -483,6 +484,9 @@
         let currentPlayerId = null;
         let isHost = false;
         let gameState = null;
+
+        // 平滑移動動畫系統
+        let playerAnimations = {}; // 儲存每個玩家的動畫狀態
 
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
@@ -778,37 +782,48 @@
 
         function setupKeyboardControls() {
             let lastMoveTime = 0;
-            const moveDelay = 120;
+            const moveDelay = 60; // 減少延遲從 120ms 到 60ms
+            let isMoving = false; // 防止重複移動
 
             document.addEventListener('keydown', async (e) => {
-                if (!gameState || Date.now() - lastMoveTime < moveDelay) return;
+                if (!gameState || Date.now() - lastMoveTime < moveDelay || isMoving) return;
 
                 const playerRef = database.ref(`rooms/${currentRoomId}/players/${currentPlayerId}`);
-                const snapshot = await playerRef.once('value');
-                const player = snapshot.val();
 
+                // 使用本地快取的玩家資料，避免每次都查詢 Firebase
+                const player = gameState.players[currentPlayerId];
                 if (!player) return;
 
                 let newX = player.x;
                 let newY = player.y;
 
+                // 檢查是否為遊戲控制鍵，如果是就立即阻止預設行為
                 if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
+                    e.preventDefault();
                     newY--;
                 } else if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
+                    e.preventDefault();
                     newY++;
                 } else if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+                    e.preventDefault();
                     newX--;
                 } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+                    e.preventDefault();
                     newX++;
                 } else {
                     return;
                 }
 
-                e.preventDefault();
-
                 if (newX >= 0 && newX < COLS && newY >= 0 && newY < ROWS) {
                     if (gameState.maze[newY][newX] !== 1) {
                         lastMoveTime = Date.now();
+                        isMoving = true;
+
+                        // 本地預測：立即更新本地狀態
+                        const oldX = player.x;
+                        const oldY = player.y;
+                        gameState.players[currentPlayerId].x = newX;
+                        gameState.players[currentPlayerId].y = newY;
 
                         const updates = {
                             x: newX,
@@ -818,10 +833,12 @@
                         // 檢查豆子
                         if (gameState.maze[newY][newX] === 2) {
                             updates.score = (player.score || 0) + 10;
-                            await database.ref(`rooms/${currentRoomId}/maze/${newY}/${newX}`).set(0);
+                            gameState.players[currentPlayerId].score = updates.score;
+                            database.ref(`rooms/${currentRoomId}/maze/${newY}/${newX}`).set(0);
                         } else if (gameState.maze[newY][newX] === 3) {
                             updates.score = (player.score || 0) + 50;
-                            await database.ref(`rooms/${currentRoomId}/maze/${newY}/${newX}`).set(0);
+                            gameState.players[currentPlayerId].score = updates.score;
+                            database.ref(`rooms/${currentRoomId}/maze/${newY}/${newX}`).set(0);
                         }
 
                         // 檢查玩家碰撞
@@ -831,6 +848,16 @@
                                     otherPlayer.x === newX &&
                                     otherPlayer.y === newY) {
 
+                                    // 檢查雙方是否有無敵時間
+                                    const now = Date.now();
+                                    const myInvincible = player.invincibleUntil && player.invincibleUntil > now;
+                                    const otherInvincible = otherPlayer.invincibleUntil && otherPlayer.invincibleUntil > now;
+
+                                    // 如果任一方無敵，則不發生碰撞
+                                    if (myInvincible || otherInvincible) {
+                                        break;
+                                    }
+
                                     const myScore = updates.score || player.score || 0;
                                     const otherScore = otherPlayer.score || 0;
 
@@ -838,15 +865,17 @@
                                         // 我分數較高，吃掉對方
                                         const gainedScore = Math.floor(otherScore / 2);
                                         updates.score = myScore + gainedScore;
+                                        gameState.players[currentPlayerId].score = updates.score;
 
-                                        // 對方重生到起始位置
+                                        // 對方重生到起始位置，並給予無敵時間
                                         const otherRef = database.ref(`rooms/${currentRoomId}/players/${otherId}`);
                                         const otherIndex = Object.keys(gameState.players).indexOf(otherId);
                                         const respawnPos = startPositions[otherIndex % startPositions.length];
-                                        await otherRef.update({
+                                        otherRef.update({
                                             x: respawnPos.x,
                                             y: respawnPos.y,
-                                            score: Math.floor(otherScore / 2)
+                                            score: Math.floor(otherScore / 2),
+                                            invincibleUntil: Date.now() + 5000
                                         });
                                     } else if (otherScore > myScore) {
                                         // 對方分數較高，我被吃掉
@@ -857,10 +886,15 @@
                                         updates.x = respawnPos.x;
                                         updates.y = respawnPos.y;
                                         updates.score = lostScore;
+                                        updates.invincibleUntil = Date.now() + 5000; // 5秒無敵時間
+                                        gameState.players[currentPlayerId].x = respawnPos.x;
+                                        gameState.players[currentPlayerId].y = respawnPos.y;
+                                        gameState.players[currentPlayerId].score = lostScore;
+                                        gameState.players[currentPlayerId].invincibleUntil = updates.invincibleUntil;
 
                                         // 對方獲得分數
                                         const otherRef = database.ref(`rooms/${currentRoomId}/players/${otherId}`);
-                                        await otherRef.update({
+                                        otherRef.update({
                                             score: otherScore + (myScore - lostScore)
                                         });
                                     }
@@ -870,7 +904,15 @@
                             }
                         }
 
-                        await playerRef.update(updates);
+                        // 非同步更新 Firebase，不等待回應
+                        playerRef.update(updates).then(() => {
+                            isMoving = false;
+                        }).catch((error) => {
+                            // 如果更新失敗，回滾本地狀態
+                            gameState.players[currentPlayerId].x = oldX;
+                            gameState.players[currentPlayerId].y = oldY;
+                            isMoving = false;
+                        });
                     }
                 }
             });
@@ -923,30 +965,83 @@
 
             if (gameState.players) {
                 Object.entries(gameState.players).forEach(([id, player]) => {
+                    // 檢查是否無敵
+                    const now = Date.now();
+                    const isInvincible = player.invincibleUntil && player.invincibleUntil > now;
+
+                    // 無敵時閃爍效果（每 200ms 切換一次可見性）
+                    if (isInvincible && Math.floor(now / 200) % 2 === 0) {
+                        return; // 不繪製，產生閃爍效果
+                    }
+
+                    // 平滑移動動畫
+                    if (!playerAnimations[id]) {
+                        playerAnimations[id] = {
+                            displayX: player.x,
+                            displayY: player.y,
+                            targetX: player.x,
+                            targetY: player.y
+                        };
+                    }
+
+                    const anim = playerAnimations[id];
+
+                    // 檢查目標位置是否改變
+                    if (anim.targetX !== player.x || anim.targetY !== player.y) {
+                        anim.targetX = player.x;
+                        anim.targetY = player.y;
+                    }
+
+                    // 平滑插值移動（lerp）- 速度：0.3 表示每幀移動 30% 的距離
+                    const lerpSpeed = 0.3;
+                    anim.displayX += (anim.targetX - anim.displayX) * lerpSpeed;
+                    anim.displayY += (anim.targetY - anim.displayY) * lerpSpeed;
+
+                    // 計算實際像素位置
+                    const displayPixelX = anim.displayX * CELL_SIZE + CELL_SIZE / 2;
+                    const displayPixelY = anim.displayY * CELL_SIZE + CELL_SIZE / 2;
+
+                    // 根據分數計算大小：基礎大小 + 分數加成
+                    // 每 50 分增加 1 像素，最大不超過 CELL_SIZE
+                    const baseRadius = CELL_SIZE / 2 - 2;
+                    const scoreBonus = Math.min(Math.floor((player.score || 0) / 50) * 2, CELL_SIZE / 2);
+                    const playerRadius = baseRadius + scoreBonus;
+
+                    // 畫玩家圓形（無敵時加上光環）
+                    if (isInvincible) {
+                        ctx.strokeStyle = '#FFFF00';
+                        ctx.lineWidth = 3;
+                        ctx.beginPath();
+                        ctx.arc(displayPixelX, displayPixelY, playerRadius + 5, 0, Math.PI * 2);
+                        ctx.stroke();
+                    }
+
                     ctx.fillStyle = player.color;
                     ctx.beginPath();
-                    ctx.arc(
-                        player.x * CELL_SIZE + CELL_SIZE / 2,
-                        player.y * CELL_SIZE + CELL_SIZE / 2,
-                        CELL_SIZE / 2 - 2, 0, Math.PI * 2
-                    );
+                    ctx.arc(displayPixelX, displayPixelY, playerRadius, 0, Math.PI * 2);
                     ctx.fill();
+
+                    // 畫眼睛（根據大小調整位置）
+                    const eyeOffset = Math.min(playerRadius * 0.3, 4);
+                    const eyeSize = Math.max(playerRadius * 0.15, 2);
 
                     ctx.fillStyle = '#000';
                     ctx.beginPath();
-                    ctx.arc(player.x * CELL_SIZE + CELL_SIZE / 2 - 3, player.y * CELL_SIZE + CELL_SIZE / 2 - 2, 2, 0, Math.PI * 2);
+                    ctx.arc(displayPixelX - eyeOffset, displayPixelY - eyeOffset, eyeSize, 0, Math.PI * 2);
                     ctx.fill();
                     ctx.beginPath();
-                    ctx.arc(player.x * CELL_SIZE + CELL_SIZE / 2 + 3, player.y * CELL_SIZE + CELL_SIZE / 2 - 2, 2, 0, Math.PI * 2);
+                    ctx.arc(displayPixelX + eyeOffset, displayPixelY - eyeOffset, eyeSize, 0, Math.PI * 2);
                     ctx.fill();
 
+                    // 畫名字（根據大小調整位置）
                     ctx.fillStyle = player.color;
                     ctx.font = 'bold 9px Arial';
                     ctx.textAlign = 'center';
                     ctx.strokeStyle = '#000';
                     ctx.lineWidth = 2;
-                    ctx.strokeText(player.name, player.x * CELL_SIZE + CELL_SIZE / 2, player.y * CELL_SIZE - 5);
-                    ctx.fillText(player.name, player.x * CELL_SIZE + CELL_SIZE / 2, player.y * CELL_SIZE - 5);
+                    const nameOffset = playerRadius + 8;
+                    ctx.strokeText(player.name, displayPixelX, displayPixelY - nameOffset);
+                    ctx.fillText(player.name, displayPixelX, displayPixelY - nameOffset);
                 });
             }
 
@@ -991,6 +1086,16 @@
                                     otherPlayer.x === newX &&
                                     otherPlayer.y === newY) {
 
+                                    // 檢查雙方是否有無敵時間
+                                    const now = Date.now();
+                                    const myInvincible = player.invincibleUntil && player.invincibleUntil > now;
+                                    const otherInvincible = otherPlayer.invincibleUntil && otherPlayer.invincibleUntil > now;
+
+                                    // 如果任一方無敵，則不發生碰撞
+                                    if (myInvincible || otherInvincible) {
+                                        break;
+                                    }
+
                                     const myScore = updates.score || player.score || 0;
                                     const otherScore = otherPlayer.score || 0;
 
@@ -999,14 +1104,15 @@
                                         const gainedScore = Math.floor(otherScore / 2);
                                         updates.score = myScore + gainedScore;
 
-                                        // 對方重生
+                                        // 對方重生，並給予無敵時間
                                         const otherRef = database.ref(`rooms/${currentRoomId}/players/${otherId}`);
                                         const otherIndex = Object.keys(gameState.players).indexOf(otherId);
                                         const respawnPos = startPositions[otherIndex % startPositions.length];
                                         await otherRef.update({
                                             x: respawnPos.x,
                                             y: respawnPos.y,
-                                            score: Math.floor(otherScore / 2)
+                                            score: Math.floor(otherScore / 2),
+                                            invincibleUntil: Date.now() + 5000
                                         });
                                     } else if (otherScore > myScore) {
                                         // 對方分數較高，Bot被吃掉
@@ -1017,6 +1123,7 @@
                                         updates.x = respawnPos.x;
                                         updates.y = respawnPos.y;
                                         updates.score = lostScore;
+                                        updates.invincibleUntil = Date.now() + 5000;
 
                                         // 對方獲得分數
                                         const otherRef = database.ref(`rooms/${currentRoomId}/players/${otherId}`);
@@ -1040,7 +1147,7 @@
         let botCounter = 0;
 
         async function addBotPlayer() {
-            if (!currentRoomId || !isHost) return;
+            if (!currentRoomId) return;
 
             botCounter++;
             const botId = 'bot_' + Date.now() + '_' + botCounter;
