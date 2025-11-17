@@ -13,7 +13,7 @@
 
         body {
             font-family: 'Microsoft JhengHei', 'PingFang TC', 'Arial', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #fff5e6;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -26,19 +26,20 @@
             position: fixed;
             top: 20px;
             right: 20px;
-            background: rgba(255, 255, 255, 0.95);
+            background: #ffffff;
             border-radius: 25px;
             padding: 10px 20px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             display: flex;
             gap: 10px;
             z-index: 1000;
+            border: 3px solid #ffb088;
         }
 
         .language-switch button {
             background: transparent;
-            border: 2px solid #667eea;
-            color: #667eea;
+            border: 2px solid #ff9966;
+            color: #ff6633;
             padding: 8px 15px;
             border-radius: 15px;
             cursor: pointer;
@@ -48,9 +49,9 @@
         }
 
         .language-switch button.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-color: transparent;
+            background: #ff9966;
+            color: #ffffff;
+            border-color: #ff9966;
         }
 
         .language-switch button:hover {
@@ -58,20 +59,22 @@
         }
 
         .container {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            background: #ffffff;
+            border-radius: 25px;
+            padding: 35px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
             max-width: 1200px;
             width: 100%;
+            border: 4px solid #ffcc99;
         }
 
         h1 {
             text-align: center;
-            color: #333;
-            margin-bottom: 20px;
+            color: #ff6633;
+            margin-bottom: 25px;
             font-size: 2.5em;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+            font-weight: 900;
+            text-shadow: 2px 2px 0px #ffccaa;
         }
 
         .menu-screen, .game-screen {
@@ -91,29 +94,33 @@
         }
 
         button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: #ffaa77;
+            color: #ffffff;
             border: none;
-            padding: 15px 30px;
+            padding: 16px 32px;
             font-size: 1.2em;
             border-radius: 25px;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: all 0.3s;
             font-weight: bold;
+            box-shadow: 0 4px 12px rgba(255, 170, 119, 0.3);
         }
 
         button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 6px 16px rgba(255, 170, 119, 0.4);
+            background: #ff9966;
         }
 
         button:active {
-            transform: translateY(0);
+            transform: translateY(0px);
+            box-shadow: 0 2px 8px rgba(255, 170, 119, 0.3);
         }
 
         button:disabled {
             opacity: 0.5;
             cursor: not-allowed;
+            transform: none;
         }
 
         .input-group {
@@ -122,91 +129,131 @@
 
         .input-group label {
             display: block;
-            margin-bottom: 8px;
-            color: #333;
+            margin-bottom: 10px;
+            color: #ff6633;
             font-weight: bold;
+            font-size: 1.05em;
         }
 
         .input-group input {
             width: 100%;
-            padding: 12px;
+            padding: 14px;
             font-size: 1.1em;
-            border: 2px solid #667eea;
-            border-radius: 10px;
+            border: 3px solid #ffccaa;
+            border-radius: 12px;
             outline: none;
+            background: #fffbf5;
+            transition: all 0.3s;
         }
 
         .input-group input:focus {
-            border-color: #764ba2;
-            box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+            border-color: #ff9966;
+            box-shadow: 0 0 10px rgba(255, 153, 102, 0.3);
+            background: #ffffff;
+        }
+
+        .input-group select {
+            background: #fffbf5;
+            color: #ff6633;
+            border: 3px solid #ffccaa;
+            transition: all 0.3s;
+        }
+
+        .input-group select:focus {
+            border-color: #ff9966;
+            box-shadow: 0 0 10px rgba(255, 153, 102, 0.3);
+            outline: none;
         }
 
         .room-code {
-            background: #f0f0f0;
-            padding: 20px;
-            border-radius: 10px;
+            background: #ffe6cc;
+            padding: 25px;
+            border-radius: 15px;
             text-align: center;
             margin: 20px 0;
+            border: 4px solid #ffaa77;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
         .room-code h3 {
-            color: #667eea;
-            margin-bottom: 10px;
+            color: #ff6633;
+            margin-bottom: 12px;
+            font-size: 1.2em;
         }
 
         .room-code .code {
-            font-size: 2em;
+            font-size: 2.5em;
             font-weight: bold;
-            color: #333;
-            letter-spacing: 5px;
-            font-family: monospace;
+            color: #ff6633;
+            letter-spacing: 8px;
+            font-family: 'Courier New', monospace;
         }
 
         .players-list {
-            background: #f9f9f9;
-            padding: 15px;
-            border-radius: 10px;
+            background: #fffbf5;
+            padding: 20px;
+            border-radius: 15px;
             margin: 20px 0;
             max-height: 400px;
             overflow-y: auto;
+            border: 3px solid #ffccaa;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         }
 
         .players-list h3 {
-            color: #333;
-            margin-bottom: 10px;
+            color: #ff6633;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            border-bottom: 3px solid #ffaa77;
+            padding-bottom: 10px;
         }
 
         .player-item {
-            padding: 10px;
-            margin: 5px 0;
-            border-radius: 5px;
+            padding: 12px 15px;
+            margin: 8px 0;
+            border-radius: 10px;
             font-weight: bold;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
+            background: #ffffff;
+            border: 2px solid #ffe6cc;
+            transition: all 0.3s;
+            color: #cc5522;
+        }
+
+        .player-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 3px 10px rgba(255, 153, 102, 0.2);
+            border-color: #ffaa77;
         }
 
         .player-color-dot {
-            width: 20px;
-            height: 20px;
+            width: 24px;
+            height: 24px;
             border-radius: 50%;
             flex-shrink: 0;
+            border: 2px solid rgba(255, 102, 51, 0.3);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
         }
 
         .info-panel {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 10px;
+            gap: 15px;
             margin-bottom: 20px;
         }
 
         .player-info {
-            padding: 10px 15px;
-            border-radius: 10px;
-            color: white;
+            padding: 12px 18px;
+            border-radius: 12px;
+            background: #ffe6cc;
+            color: #ff6633;
             font-weight: bold;
             text-align: center;
-            font-size: 0.9em;
+            font-size: 1em;
+            border: 3px solid #ffaa77;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
         }
 
         canvas {
@@ -225,30 +272,111 @@
 
         .status-message {
             text-align: center;
-            padding: 15px;
+            padding: 18px;
             margin: 15px 0;
-            border-radius: 10px;
+            border-radius: 12px;
             font-weight: bold;
+            font-size: 1.05em;
+            border: 3px solid;
         }
 
         .status-message.info {
-            background: #d1ecf1;
-            color: #0c5460;
+            background: #e3f2fd;
+            color: #1565c0;
+            border-color: #42a5f5;
         }
 
         .status-message.success {
-            background: #d4edda;
-            color: #155724;
+            background: #e8f5e9;
+            color: #2e7d32;
+            border-color: #66bb6a;
         }
 
         .status-message.warning {
-            background: #fff3cd;
-            color: #856404;
+            background: #fff3e0;
+            color: #e65100;
+            border-color: #ffa726;
         }
 
         .back-button {
-            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            background: #ff7755;
             margin-top: 10px;
+        }
+
+        .back-button:hover {
+            background: #ff5533;
+        }
+
+        /* 手機虛擬方向鈕 */
+        .mobile-controls {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        @media (max-width: 768px) {
+            .mobile-controls {
+                display: block;
+            }
+        }
+
+        .dpad {
+            display: grid;
+            grid-template-columns: repeat(3, 70px);
+            grid-template-rows: repeat(3, 70px);
+            gap: 5px;
+        }
+
+        .dpad-btn {
+            background: #ffaa77;
+            border: 3px solid #ffffff;
+            border-radius: 15px;
+            color: #ffffff;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.1s;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .dpad-btn:active {
+            background: #ff9966;
+            transform: scale(0.95);
+            box-shadow: inset 0 3px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .dpad-up {
+            grid-column: 2;
+            grid-row: 1;
+        }
+
+        .dpad-left {
+            grid-column: 1;
+            grid-row: 2;
+        }
+
+        .dpad-center {
+            grid-column: 2;
+            grid-row: 2;
+            background: #ffe6cc;
+            border: 2px solid #ffccaa;
+            cursor: default;
+            color: #ff9966;
+        }
+
+        .dpad-right {
+            grid-column: 3;
+            grid-row: 2;
+        }
+
+        .dpad-down {
+            grid-column: 2;
+            grid-row: 3;
         }
     </style>
 </head>
@@ -274,6 +402,28 @@
                     <label id="labelHostName" data-i18n="yourNickname">你的暱稱：</label>
                     <input type="text" id="hostName" data-i18n-placeholder="enterNickname" placeholder="輸入你的暱稱" maxlength="15">
                 </div>
+                <div class="input-group">
+                    <label id="labelGameMode" data-i18n="gameMode">遊戲模式：</label>
+                    <select id="gameMode" style="padding: 10px; font-size: 1em; border-radius: 10px; border: 2px solid #ddd; width: 100%;">
+                        <option value="classic" data-i18n-option="modeClassic">經典模式（無限時）</option>
+                        <option value="timeAttack" data-i18n-option="modeTimeAttack">⏱️ 計時競速賽（3分鐘）</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label id="labelAvatar" data-i18n="chooseAvatar">選擇角色：</label>
+                    <select id="hostAvatar" style="padding: 10px; font-size: 1em; border-radius: 10px; border: 2px solid #ddd; width: 100%;">
+                        <option value="pacman">🟡 小精靈 Pac-Man</option>
+                        <option value="invader">👾 太空侵略者 Space Invader</option>
+                        <option value="robot">🤖 機器人 Robot</option>
+                        <option value="tank">🚜 坦克 Tank</option>
+                        <option value="ninja">🥷 忍者 Ninja</option>
+                        <option value="wizard">🧙 巫師 Wizard</option>
+                        <option value="knight">⚔️ 騎士 Knight</option>
+                        <option value="alien">👽 外星人 Alien</option>
+                        <option value="mushroom">🍄 蘑菇 Mushroom</option>
+                        <option value="dragon">🐲 龍 Dragon</option>
+                    </select>
+                </div>
                 <button id="btnCreateRoom" data-i18n="createRoomBtn">建立房間</button>
                 <button class="back-button" id="btnBackFromCreate" data-i18n="back">返回</button>
             </div>
@@ -286,6 +436,21 @@
                 <div class="input-group">
                     <label id="labelRoomCode" data-i18n="roomCode">房間代碼：</label>
                     <input type="text" id="roomCode" data-i18n-placeholder="enterRoomCode" placeholder="輸入6位數房間代碼" maxlength="6">
+                </div>
+                <div class="input-group">
+                    <label id="labelPlayerAvatar" data-i18n="chooseAvatar">選擇角色：</label>
+                    <select id="playerAvatar" style="padding: 10px; font-size: 1em; border-radius: 10px; border: 2px solid #ddd; width: 100%;">
+                        <option value="pacman">🟡 小精靈 Pac-Man</option>
+                        <option value="invader">👾 太空侵略者 Space Invader</option>
+                        <option value="robot">🤖 機器人 Robot</option>
+                        <option value="tank">🚜 坦克 Tank</option>
+                        <option value="ninja">🥷 忍者 Ninja</option>
+                        <option value="wizard">🧙 巫師 Wizard</option>
+                        <option value="knight">⚔️ 騎士 Knight</option>
+                        <option value="alien">👽 外星人 Alien</option>
+                        <option value="mushroom">🍄 蘑菇 Mushroom</option>
+                        <option value="dragon">🐲 龍 Dragon</option>
+                    </select>
                 </div>
                 <button id="btnJoinRoom" data-i18n="joinRoomBtn">加入房間</button>
                 <button class="back-button" id="btnBackFromJoin" data-i18n="back">返回</button>
@@ -327,6 +492,17 @@
                 </p>
                 <button class="back-button" id="btnLeaveGame" data-i18n="leaveGame">離開遊戲</button>
             </div>
+
+            <!-- 手機虛擬方向鈕 -->
+            <div id="mobileControls" class="mobile-controls">
+                <div class="dpad">
+                    <button class="dpad-btn dpad-up" data-direction="up">↑</button>
+                    <button class="dpad-btn dpad-left" data-direction="left">←</button>
+                    <button class="dpad-btn dpad-center"></button>
+                    <button class="dpad-btn dpad-right" data-direction="right">→</button>
+                    <button class="dpad-btn dpad-down" data-direction="down">↓</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -343,6 +519,9 @@
                 joinRoom: '🚪 加入遊戲房間',
                 yourNickname: '你的暱稱：',
                 enterNickname: '輸入你的暱稱',
+                gameMode: '遊戲模式：',
+                modeClassic: '經典模式（無限時）',
+                modeTimeAttack: '⏱️ 計時競速賽（3分鐘）',
                 roomCode: '房間代碼：',
                 enterRoomCode: '輸入6位數房間代碼',
                 createRoomBtn: '建立房間',
@@ -377,6 +556,9 @@
                 joinRoom: '🚪 Join Game Room',
                 yourNickname: 'Your Nickname:',
                 enterNickname: 'Enter your nickname',
+                gameMode: 'Game Mode:',
+                modeClassic: 'Classic Mode (Unlimited)',
+                modeTimeAttack: '⏱️ Time Attack (3 Minutes)',
                 roomCode: 'Room Code:',
                 enterRoomCode: 'Enter 6-digit room code',
                 createRoomBtn: 'Create Room',
@@ -480,6 +662,401 @@
             '#9370DB', '#FFA500', '#00FA9A', '#FF1493', '#4169E1'
         ];
 
+        // 角色外型系統 - 10種8位元復古風格
+        const avatarTypes = {
+            pacman: {
+                name: '小精靈',
+                nameEn: 'Pac-Man',
+                emoji: '🟡',
+                draw: (ctx, x, y, radius, color, direction) => {
+                    // 經典小精靈張嘴動畫
+                    const time = Date.now();
+                    const mouthCycle = Math.sin(time / 100) * 0.15 + 0.15; // 0 到 0.3 之間振盪
+                    const mouthAngle = mouthCycle * Math.PI; // 嘴巴張開角度
+
+                    // 根據方向設定旋轉角度
+                    let rotation = 0;
+                    if (direction === 'right') rotation = 0;
+                    else if (direction === 'down') rotation = Math.PI / 2;
+                    else if (direction === 'left') rotation = Math.PI;
+                    else if (direction === 'up') rotation = -Math.PI / 2;
+
+                    ctx.save();
+                    ctx.translate(x, y);
+                    ctx.rotate(rotation);
+
+                    ctx.fillStyle = color;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, radius, mouthAngle, 2 * Math.PI - mouthAngle);
+                    ctx.lineTo(0, 0);
+                    ctx.fill();
+
+                    // 眼睛
+                    ctx.fillStyle = '#000';
+                    ctx.beginPath();
+                    ctx.arc(-radius * 0.2, -radius * 0.4, radius * 0.15, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.restore();
+                }
+            },
+            invader: {
+                name: '太空侵略者',
+                nameEn: 'Space Invader',
+                emoji: '👾',
+                draw: (ctx, x, y, radius, color) => {
+                    // 8位元太空侵略者像素風格
+                    const animFrame = Math.floor(Date.now() / 300) % 2; // 觸手動畫
+                    ctx.fillStyle = color;
+                    const p = radius * 0.25; // 像素單位
+
+                    const pixels1 = [ // 觸手向下
+                        [0,0,1,0,0,0,0,0,1,0,0],
+                        [0,0,0,1,0,0,0,1,0,0,0],
+                        [0,0,1,1,1,1,1,1,1,0,0],
+                        [0,1,1,0,1,1,1,0,1,1,0],
+                        [1,1,1,1,1,1,1,1,1,1,1],
+                        [1,0,1,1,1,1,1,1,1,0,1],
+                        [1,0,1,0,0,0,0,0,1,0,1],
+                        [0,0,0,1,1,0,1,1,0,0,0]
+                    ];
+
+                    const pixels2 = [ // 觸手向上
+                        [0,0,1,0,0,0,0,0,1,0,0],
+                        [0,0,0,1,0,0,0,1,0,0,0],
+                        [0,0,1,1,1,1,1,1,1,0,0],
+                        [0,1,1,0,1,1,1,0,1,1,0],
+                        [1,1,1,1,1,1,1,1,1,1,1],
+                        [1,0,1,1,1,1,1,1,1,0,1],
+                        [1,0,1,0,0,0,0,0,1,0,1],
+                        [0,1,0,1,0,0,1,0,1,0,0]
+                    ];
+
+                    const pixels = animFrame === 0 ? pixels1 : pixels2;
+                    pixels.forEach((row, i) => {
+                        row.forEach((pixel, j) => {
+                            if (pixel) ctx.fillRect(x - 5.5*p + j*p, y - 4*p + i*p, p, p);
+                        });
+                    });
+                }
+            },
+            robot: {
+                name: '機器人',
+                nameEn: 'Robot',
+                emoji: '🤖',
+                draw: (ctx, x, y, radius, color) => {
+                    const p = radius * 0.3;
+                    const walkCycle = Math.floor(Date.now() / 200) % 2; // 0 或 1 交替
+
+                    // 身體
+                    ctx.fillStyle = color;
+                    ctx.fillRect(x - 1.5*p, y - 1.5*p, 3*p, 3*p);
+                    // 頭部
+                    ctx.fillRect(x - p, y - 2.5*p, 2*p, p);
+                    // 天線
+                    ctx.fillRect(x - 0.3*p, y - 3.2*p, 0.6*p, 0.7*p);
+                    // 眼睛
+                    ctx.fillStyle = '#000';
+                    ctx.fillRect(x - 0.8*p, y - 2*p, 0.4*p, 0.4*p);
+                    ctx.fillRect(x + 0.4*p, y - 2*p, 0.4*p, 0.4*p);
+                    // 腳（交替移動）
+                    ctx.fillStyle = color;
+                    const leftFootOffset = walkCycle === 0 ? 0.2*p : 0;
+                    const rightFootOffset = walkCycle === 1 ? 0.2*p : 0;
+                    ctx.fillRect(x - 1.3*p, y + 1.5*p + leftFootOffset, 0.6*p, 0.8*p);
+                    ctx.fillRect(x + 0.7*p, y + 1.5*p + rightFootOffset, 0.6*p, 0.8*p);
+                }
+            },
+            tank: {
+                name: '坦克',
+                nameEn: 'Tank',
+                emoji: '🚜',
+                draw: (ctx, x, y, radius, color) => {
+                    const p = radius * 0.3;
+                    const trackOffset = (Date.now() / 100) % (p * 0.8); // 履帶滾動
+
+                    // 履帶底座
+                    ctx.fillStyle = color;
+                    ctx.fillRect(x - 2*p, y + 0.5*p, 4*p, 1.2*p);
+
+                    // 履帶紋路（滾動效果）
+                    ctx.fillStyle = 'rgba(0,0,0,0.3)';
+                    for (let i = -3; i < 6; i++) {
+                        const lineX = x - 2*p + (i * p * 0.8) + trackOffset;
+                        if (lineX >= x - 2*p && lineX <= x + 2*p) {
+                            ctx.fillRect(lineX, y + 0.5*p, p * 0.2, 1.2*p);
+                        }
+                    }
+
+                    // 車身
+                    ctx.fillStyle = color;
+                    ctx.fillRect(x - 1.5*p, y - 0.5*p, 3*p, p);
+                    // 砲塔
+                    ctx.fillRect(x - 0.8*p, y - 1.3*p, 1.6*p, 0.8*p);
+                    // 砲管
+                    ctx.fillRect(x + 0.8*p, y - 1*p, 1*p, 0.4*p);
+                }
+            },
+            ninja: {
+                name: '忍者',
+                nameEn: 'Ninja',
+                emoji: '🥷',
+                draw: (ctx, x, y, radius, color) => {
+                    const p = radius * 0.3;
+                    const walkCycle = Math.floor(Date.now() / 150) % 2;
+
+                    // 身體
+                    ctx.fillStyle = color;
+                    ctx.fillRect(x - 1.2*p, y - 0.5*p, 2.4*p, 2.5*p);
+                    // 頭部
+                    ctx.fillRect(x - 1*p, y - 2*p, 2*p, 1.5*p);
+                    // 眼睛（白色）
+                    ctx.fillStyle = '#FFF';
+                    ctx.fillRect(x - 0.7*p, y - 1.5*p, 0.5*p, 0.3*p);
+                    ctx.fillRect(x + 0.2*p, y - 1.5*p, 0.5*p, 0.3*p);
+                    // 手臂（擺動動畫）
+                    ctx.fillStyle = color;
+                    const leftArmY = walkCycle === 0 ? -0.2*p : 0;
+                    const rightArmY = walkCycle === 1 ? -0.2*p : 0;
+                    ctx.fillRect(x - 1.8*p, y - 0.2*p + leftArmY, 0.6*p, 1.5*p);
+                    ctx.fillRect(x + 1.2*p, y - 0.2*p + rightArmY, 0.6*p, 1.5*p);
+                }
+            },
+            wizard: {
+                name: '巫師',
+                nameEn: 'Wizard',
+                emoji: '🧙',
+                draw: (ctx, x, y, radius, color) => {
+                    const p = radius * 0.3;
+                    const wandSwing = Math.sin(Date.now() / 200) * 0.3; // 法杖揮動
+
+                    // 身體（袍子）
+                    ctx.fillStyle = color;
+                    ctx.beginPath();
+                    ctx.moveTo(x - 1.8*p, y + 2*p);
+                    ctx.lineTo(x - 0.5*p, y - 0.5*p);
+                    ctx.lineTo(x + 0.5*p, y - 0.5*p);
+                    ctx.lineTo(x + 1.8*p, y + 2*p);
+                    ctx.fill();
+
+                    // 法杖
+                    ctx.save();
+                    ctx.translate(x + 1.5*p, y + 0.5*p);
+                    ctx.rotate(wandSwing);
+                    ctx.fillStyle = '#8B4513';
+                    ctx.fillRect(-0.1*p, -1.2*p, 0.2*p, 1.5*p);
+                    // 法杖頂端星星
+                    ctx.fillStyle = '#FFD700';
+                    ctx.beginPath();
+                    for (let i = 0; i < 5; i++) {
+                        const angle = (Math.PI * 2 * i) / 5 - Math.PI / 2;
+                        const px = Math.cos(angle) * 0.4*p;
+                        const py = -1.2*p + Math.sin(angle) * 0.4*p;
+                        if (i === 0) ctx.moveTo(px, py);
+                        else ctx.lineTo(px, py);
+                    }
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.restore();
+
+                    // 頭部
+                    ctx.fillStyle = color;
+                    ctx.beginPath();
+                    ctx.arc(x, y - 1*p, 0.8*p, 0, Math.PI * 2);
+                    ctx.fill();
+                    // 帽子
+                    ctx.beginPath();
+                    ctx.moveTo(x - 1.2*p, y - 1.8*p);
+                    ctx.lineTo(x, y - 3.5*p);
+                    ctx.lineTo(x + 1.2*p, y - 1.8*p);
+                    ctx.fill();
+                    // 帽檐
+                    ctx.fillRect(x - 1.5*p, y - 1.8*p, 3*p, 0.3*p);
+
+                    // 魔法星星特效
+                    if (Math.floor(Date.now() / 300) % 3 === 0) {
+                        ctx.fillStyle = '#FFD700';
+                        ctx.beginPath();
+                        ctx.arc(x + 2*p, y - 1*p, 0.2*p, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+            },
+            knight: {
+                name: '騎士',
+                nameEn: 'Knight',
+                emoji: '⚔️',
+                draw: (ctx, x, y, radius, color) => {
+                    const p = radius * 0.3;
+                    const shieldShake = Math.sin(Date.now() / 150) * 0.15; // 盾牌搖晃
+
+                    ctx.save();
+                    ctx.translate(x, y);
+                    ctx.rotate(shieldShake);
+
+                    // 盾牌
+                    ctx.fillStyle = color;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, 1.8*p, 0, Math.PI * 2);
+                    ctx.fill();
+                    // 十字標記
+                    ctx.fillStyle = '#FFF';
+                    ctx.fillRect(-0.2*p, -1.2*p, 0.4*p, 2.4*p);
+                    ctx.fillRect(-1.2*p, -0.2*p, 2.4*p, 0.4*p);
+
+                    ctx.restore();
+
+                    // 頭盔尖角
+                    ctx.fillStyle = color;
+                    ctx.beginPath();
+                    ctx.moveTo(x - 0.5*p, y - 1.8*p);
+                    ctx.lineTo(x, y - 2.8*p);
+                    ctx.lineTo(x + 0.5*p, y - 1.8*p);
+                    ctx.fill();
+                }
+            },
+            alien: {
+                name: '外星人',
+                nameEn: 'Alien',
+                emoji: '👽',
+                draw: (ctx, x, y, radius, color) => {
+                    const p = radius * 0.3;
+                    const antennaSwing = Math.sin(Date.now() / 250) * 0.2; // 觸角擺動
+                    const blink = Math.floor(Date.now() / 2000) % 10 === 0; // 眨眼
+
+                    // 頭部（大）
+                    ctx.fillStyle = color;
+                    ctx.beginPath();
+                    ctx.arc(x, y - 0.5*p, 1.8*p, 0, Math.PI * 2);
+                    ctx.fill();
+                    // 身體（小）
+                    ctx.fillRect(x - 0.8*p, y + 1.3*p, 1.6*p, 1.2*p);
+
+                    // 大眼睛（會眨眼）
+                    if (!blink) {
+                        ctx.fillStyle = '#000';
+                        ctx.beginPath();
+                        ctx.arc(x - 0.7*p, y - 0.7*p, 0.5*p, 0, Math.PI * 2);
+                        ctx.arc(x + 0.7*p, y - 0.7*p, 0.5*p, 0, Math.PI * 2);
+                        ctx.fill();
+                    } else {
+                        // 眨眼時畫線
+                        ctx.strokeStyle = '#000';
+                        ctx.lineWidth = 2;
+                        ctx.beginPath();
+                        ctx.moveTo(x - 1.2*p, y - 0.7*p);
+                        ctx.lineTo(x - 0.2*p, y - 0.7*p);
+                        ctx.moveTo(x + 0.2*p, y - 0.7*p);
+                        ctx.lineTo(x + 1.2*p, y - 0.7*p);
+                        ctx.stroke();
+                    }
+
+                    // 觸角（擺動）
+                    ctx.fillStyle = color;
+                    // 左觸角
+                    ctx.save();
+                    ctx.translate(x - 1.05*p, y - 1.5*p);
+                    ctx.rotate(-antennaSwing);
+                    ctx.fillRect(-0.15*p, 0, 0.3*p, 1*p);
+                    ctx.beginPath();
+                    ctx.arc(0, -1*p, 0.3*p, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+
+                    // 右觸角
+                    ctx.save();
+                    ctx.translate(x + 1.05*p, y - 1.5*p);
+                    ctx.rotate(antennaSwing);
+                    ctx.fillRect(-0.15*p, 0, 0.3*p, 1*p);
+                    ctx.beginPath();
+                    ctx.arc(0, -1*p, 0.3*p, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+            },
+            mushroom: {
+                name: '蘑菇',
+                nameEn: 'Mushroom',
+                emoji: '🍄',
+                draw: (ctx, x, y, radius, color) => {
+                    const p = radius * 0.3;
+                    const bounce = Math.abs(Math.sin(Date.now() / 250)) * 0.3*p; // 彈跳動畫
+
+                    // 蘑菇傘
+                    ctx.fillStyle = color;
+                    ctx.beginPath();
+                    ctx.arc(x, y - 0.8*p - bounce, 1.8*p, Math.PI, 0);
+                    ctx.fill();
+                    // 白點
+                    ctx.fillStyle = '#FFF';
+                    ctx.beginPath();
+                    ctx.arc(x - 1*p, y - 1*p - bounce, 0.35*p, 0, Math.PI * 2);
+                    ctx.arc(x + 1*p, y - 1*p - bounce, 0.35*p, 0, Math.PI * 2);
+                    ctx.arc(x, y - 1.8*p - bounce, 0.35*p, 0, Math.PI * 2);
+                    ctx.fill();
+                    // 蘑菇柄（伸縮效果）
+                    ctx.fillStyle = '#F5F5DC';
+                    ctx.fillRect(x - 0.7*p, y - 0.8*p - bounce, 1.4*p, 2.3*p + bounce);
+                    // 眼睛
+                    ctx.fillStyle = '#000';
+                    ctx.beginPath();
+                    ctx.arc(x - 0.4*p, y - bounce, 0.2*p, 0, Math.PI * 2);
+                    ctx.arc(x + 0.4*p, y - bounce, 0.2*p, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            },
+            dragon: {
+                name: '龍',
+                nameEn: 'Dragon',
+                emoji: '🐲',
+                draw: (ctx, x, y, radius, color) => {
+                    const p = radius * 0.3;
+                    const wingFlap = Math.sin(Date.now() / 180) * 0.5; // 翅膀拍動
+
+                    // 身體
+                    ctx.fillStyle = color;
+                    ctx.fillRect(x - 1.5*p, y - 0.5*p, 3*p, 2*p);
+                    // 頭部
+                    ctx.fillRect(x - 1.2*p, y - 2*p, 2.4*p, 1.5*p);
+                    // 龍角
+                    ctx.beginPath();
+                    ctx.moveTo(x - 1*p, y - 2*p);
+                    ctx.lineTo(x - 1.3*p, y - 3*p);
+                    ctx.lineTo(x - 0.7*p, y - 2*p);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.moveTo(x + 1*p, y - 2*p);
+                    ctx.lineTo(x + 1.3*p, y - 3*p);
+                    ctx.lineTo(x + 0.7*p, y - 2*p);
+                    ctx.fill();
+                    // 眼睛
+                    ctx.fillStyle = '#F00';
+                    ctx.fillRect(x - 0.8*p, y - 1.5*p, 0.4*p, 0.4*p);
+                    ctx.fillRect(x + 0.4*p, y - 1.5*p, 0.4*p, 0.4*p);
+
+                    // 翅膀（拍動）
+                    ctx.fillStyle = color;
+                    ctx.beginPath();
+                    ctx.moveTo(x - 1.5*p, y);
+                    ctx.lineTo(x - 2.5*p, y - 0.5*p + wingFlap);
+                    ctx.lineTo(x - 2.5*p, y + 0.8*p - wingFlap);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.moveTo(x + 1.5*p, y);
+                    ctx.lineTo(x + 2.5*p, y - 0.5*p + wingFlap);
+                    ctx.lineTo(x + 2.5*p, y + 0.8*p - wingFlap);
+                    ctx.fill();
+
+                    // 尾巴
+                    ctx.beginPath();
+                    ctx.moveTo(x + 1.5*p, y + 0.8*p);
+                    ctx.lineTo(x + 2.3*p, y + 1.8*p);
+                    ctx.lineTo(x + 1.2*p, y + 1.2*p);
+                    ctx.fill();
+                }
+            }
+        };
+
         let currentRoomId = null;
         let currentPlayerId = null;
         let isHost = false;
@@ -487,6 +1064,11 @@
 
         // 平滑移動動畫系統
         let playerAnimations = {}; // 儲存每個玩家的動畫狀態
+
+        // 幽靈系統
+        let ghosts = []; // 儲存幽靈
+        const GHOST_COLORS = ['#FF0000', '#00FFFF', '#FFB8FF', '#FFB852']; // 紅、青、粉、橘
+        const GHOST_COUNT = 4;
 
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
@@ -523,6 +1105,8 @@
 
         async function createRoom() {
             const hostName = document.getElementById('hostName').value.trim();
+            const selectedMode = document.getElementById('gameMode').value;
+            const selectedAvatar = document.getElementById('hostAvatar').value;
 
             if (!hostName) {
                 alert(t('alertEnterNickname'));
@@ -560,6 +1144,7 @@
             await roomRef.set({
                 code: roomCode,
                 status: 'waiting',
+                gameMode: selectedMode,
                 createdAt: Date.now(),
                 host: currentPlayerId,
                 maxPlayers: 10
@@ -569,6 +1154,7 @@
             await playerRef.set({
                 name: hostName,
                 color: playerColors[0],
+                avatar: selectedAvatar,
                 score: 0,
                 x: pos.x,
                 y: pos.y,
@@ -586,6 +1172,7 @@
         async function joinRoom() {
             const playerName = document.getElementById('playerName').value.trim();
             const roomCode = document.getElementById('roomCode').value.trim().toUpperCase();
+            const selectedAvatar = document.getElementById('playerAvatar').value;
 
             if (!playerName) {
                 alert(t('alertEnterNickname'));
@@ -637,6 +1224,7 @@
             await playerRef.set({
                 name: playerName,
                 color: playerColors[playerCount],
+                avatar: selectedAvatar,
                 score: 0,
                 x: pos.x,
                 y: pos.y,
@@ -712,9 +1300,29 @@
             const roomRef = database.ref(`rooms/${currentRoomId}`);
             const maze = generateMaze();
 
+            // 初始化幽靈
+            const initialGhosts = [];
+            const ghostStartPos = [
+                { x: Math.floor(COLS / 2) - 1, y: Math.floor(ROWS / 2) - 1 },
+                { x: Math.floor(COLS / 2) + 1, y: Math.floor(ROWS / 2) - 1 },
+                { x: Math.floor(COLS / 2) - 1, y: Math.floor(ROWS / 2) + 1 },
+                { x: Math.floor(COLS / 2) + 1, y: Math.floor(ROWS / 2) + 1 }
+            ];
+
+            for (let i = 0; i < GHOST_COUNT; i++) {
+                initialGhosts.push({
+                    id: 'ghost_' + i,
+                    x: ghostStartPos[i].x,
+                    y: ghostStartPos[i].y,
+                    color: GHOST_COLORS[i],
+                    direction: ['up', 'down', 'left', 'right'][Math.floor(Math.random() * 4)]
+                });
+            }
+
             await roomRef.update({
                 status: 'playing',
                 maze: maze,
+                ghosts: initialGhosts,
                 startedAt: Date.now()
             });
         }
@@ -796,20 +1404,25 @@
 
                 let newX = player.x;
                 let newY = player.y;
+                let direction = player.direction || 'right';
 
                 // 檢查是否為遊戲控制鍵，如果是就立即阻止預設行為
                 if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
                     e.preventDefault();
                     newY--;
+                    direction = 'up';
                 } else if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
                     e.preventDefault();
                     newY++;
+                    direction = 'down';
                 } else if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
                     e.preventDefault();
                     newX--;
+                    direction = 'left';
                 } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
                     e.preventDefault();
                     newX++;
+                    direction = 'right';
                 } else {
                     return;
                 }
@@ -824,10 +1437,12 @@
                         const oldY = player.y;
                         gameState.players[currentPlayerId].x = newX;
                         gameState.players[currentPlayerId].y = newY;
+                        gameState.players[currentPlayerId].direction = direction;
 
                         const updates = {
                             x: newX,
-                            y: newY
+                            y: newY,
+                            direction: direction
                         };
 
                         // 檢查豆子
@@ -1007,7 +1622,7 @@
                     const scoreBonus = Math.min(Math.floor((player.score || 0) / 50) * 2, CELL_SIZE / 2);
                     const playerRadius = baseRadius + scoreBonus;
 
-                    // 畫玩家圓形（無敵時加上光環）
+                    // 畫玩家角色（無敵時加上光環）
                     if (isInvincible) {
                         ctx.strokeStyle = '#FFFF00';
                         ctx.lineWidth = 3;
@@ -1016,22 +1631,18 @@
                         ctx.stroke();
                     }
 
-                    ctx.fillStyle = player.color;
-                    ctx.beginPath();
-                    ctx.arc(displayPixelX, displayPixelY, playerRadius, 0, Math.PI * 2);
-                    ctx.fill();
-
-                    // 畫眼睛（根據大小調整位置）
-                    const eyeOffset = Math.min(playerRadius * 0.3, 4);
-                    const eyeSize = Math.max(playerRadius * 0.15, 2);
-
-                    ctx.fillStyle = '#000';
-                    ctx.beginPath();
-                    ctx.arc(displayPixelX - eyeOffset, displayPixelY - eyeOffset, eyeSize, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.beginPath();
-                    ctx.arc(displayPixelX + eyeOffset, displayPixelY - eyeOffset, eyeSize, 0, Math.PI * 2);
-                    ctx.fill();
+                    // 使用玩家選擇的avatar類型繪製
+                    const avatarType = player.avatar || 'pacman'; // 預設為小精靈
+                    const direction = player.direction || 'right'; // 取得玩家方向
+                    if (avatarTypes[avatarType] && avatarTypes[avatarType].draw) {
+                        avatarTypes[avatarType].draw(ctx, displayPixelX, displayPixelY, playerRadius, player.color, direction);
+                    } else {
+                        // 備用：繪製預設圓形
+                        ctx.fillStyle = player.color;
+                        ctx.beginPath();
+                        ctx.arc(displayPixelX, displayPixelY, playerRadius, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
 
                     // 畫名字（根據大小調整位置）
                     ctx.fillStyle = player.color;
@@ -1042,6 +1653,57 @@
                     const nameOffset = playerRadius + 8;
                     ctx.strokeText(player.name, displayPixelX, displayPixelY - nameOffset);
                     ctx.fillText(player.name, displayPixelX, displayPixelY - nameOffset);
+                });
+            }
+
+            // 繪製幽靈
+            if (gameState.ghosts) {
+                gameState.ghosts.forEach(ghost => {
+                    const ghostX = ghost.x * CELL_SIZE + CELL_SIZE / 2;
+                    const ghostY = ghost.y * CELL_SIZE + CELL_SIZE / 2;
+                    const ghostRadius = CELL_SIZE / 2 - 2;
+
+                    // 幽靈閃爍效果
+                    const flickerCycle = Math.floor(Date.now() / 200) % 3;
+                    const opacity = flickerCycle === 0 ? 0.5 : 1.0;
+
+                    ctx.save();
+                    ctx.globalAlpha = opacity;
+
+                    // 畫幽靈身體（圓形上半部 + 波浪下半部）
+                    ctx.fillStyle = ghost.color;
+                    ctx.beginPath();
+                    ctx.arc(ghostX, ghostY - 2, ghostRadius, Math.PI, 0, false);
+                    ctx.lineTo(ghostX + ghostRadius, ghostY + ghostRadius);
+
+                    // 波浪底部
+                    for (let i = 0; i < 3; i++) {
+                        const waveX = ghostX + ghostRadius - (i * ghostRadius * 2 / 3);
+                        ctx.lineTo(waveX, ghostY + ghostRadius - ((i % 2) * 4));
+                    }
+                    ctx.lineTo(ghostX - ghostRadius, ghostY + ghostRadius);
+                    ctx.closePath();
+                    ctx.fill();
+
+                    // 畫眼睛
+                    ctx.fillStyle = '#FFF';
+                    ctx.beginPath();
+                    ctx.arc(ghostX - 4, ghostY - 2, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(ghostX + 4, ghostY - 2, 3, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // 畫瞳孔
+                    ctx.fillStyle = '#000';
+                    ctx.beginPath();
+                    ctx.arc(ghostX - 4, ghostY - 2, 1.5, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(ghostX + 4, ghostY - 2, 1.5, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.restore();
                 });
             }
 
@@ -1141,6 +1803,77 @@
                 });
             }
 
+            // 幽靈 AI 移動（只有房主執行）
+            if (isHost && gameState && gameState.ghosts && Math.random() < 0.2) {
+                const updatedGhosts = gameState.ghosts.map(ghost => {
+                    const directions = [
+                        { dx: 0, dy: -1, name: 'up' },
+                        { dx: 0, dy: 1, name: 'down' },
+                        { dx: -1, dy: 0, name: 'left' },
+                        { dx: 1, dy: 0, name: 'right' }
+                    ];
+
+                    // 80% 機率保持方向，20% 機率隨機轉向
+                    let selectedDir;
+                    if (Math.random() < 0.8 && ghost.direction) {
+                        selectedDir = directions.find(d => d.name === ghost.direction);
+                    } else {
+                        selectedDir = directions[Math.floor(Math.random() * directions.length)];
+                    }
+
+                    const newX = ghost.x + selectedDir.dx;
+                    const newY = ghost.y + selectedDir.dy;
+
+                    // 檢查是否可以移動（不撞牆）
+                    if (newX >= 0 && newX < COLS && newY >= 0 && newY < ROWS &&
+                        gameState.maze[newY][newX] !== 1) {
+                        return {
+                            ...ghost,
+                            x: newX,
+                            y: newY,
+                            direction: selectedDir.name
+                        };
+                    } else {
+                        // 撞牆了，隨機選新方向
+                        const randomDir = directions[Math.floor(Math.random() * directions.length)];
+                        return {
+                            ...ghost,
+                            direction: randomDir.name
+                        };
+                    }
+                });
+
+                database.ref(`rooms/${currentRoomId}/ghosts`).set(updatedGhosts);
+
+                // 檢查幽靈是否碰到玩家
+                if (gameState.players) {
+                    Object.keys(gameState.players).forEach(async (playerId) => {
+                        const player = gameState.players[playerId];
+                        const now = Date.now();
+                        const isInvincible = player.invincibleUntil && player.invincibleUntil > now;
+
+                        if (!isInvincible) {
+                            updatedGhosts.forEach(async (ghost) => {
+                                if (player.x === ghost.x && player.y === ghost.y) {
+                                    // 被幽靈碰到，重生並失去分數
+                                    const lostScore = Math.floor((player.score || 0) / 2);
+                                    const playerIndex = Object.keys(gameState.players).indexOf(playerId);
+                                    const respawnPos = startPositions[playerIndex % startPositions.length];
+
+                                    const playerRef = database.ref(`rooms/${currentRoomId}/players/${playerId}`);
+                                    await playerRef.update({
+                                        x: respawnPos.x,
+                                        y: respawnPos.y,
+                                        score: lostScore,
+                                        invincibleUntil: Date.now() + 5000
+                                    });
+                                }
+                            });
+                        }
+                    });
+                }
+            }
+
             requestAnimationFrame(gameLoop);
         }
 
@@ -1169,10 +1902,15 @@
             const colorIndex = playerCount;
             const pos = startPositions[colorIndex];
 
+            // Bot隨機選擇角色
+            const avatarKeys = Object.keys(avatarTypes);
+            const randomAvatar = avatarKeys[Math.floor(Math.random() * avatarKeys.length)];
+
             const botRef = database.ref(`rooms/${currentRoomId}/players/${botId}`);
             await botRef.set({
                 name: botName,
                 color: playerColors[colorIndex],
+                avatar: randomAvatar,
                 score: 0,
                 x: pos.x,
                 y: pos.y,
@@ -1210,7 +1948,143 @@
             document.getElementById('roomCode').addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') joinRoom();
             });
+
+            // 手機虛擬方向鈕控制
+            setupMobileControls();
         });
+
+        function setupMobileControls() {
+            const dpadButtons = document.querySelectorAll('.dpad-btn[data-direction]');
+
+            dpadButtons.forEach(btn => {
+                const direction = btn.getAttribute('data-direction');
+
+                // 使用 touchstart 和 touchend 來處理觸控
+                btn.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    handleMobileMove(direction);
+                });
+
+                // 也支援滑鼠點擊（方便桌面測試）
+                btn.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    handleMobileMove(direction);
+                });
+            });
+        }
+
+        function handleMobileMove(direction) {
+            if (!gameState || !currentPlayerId) return;
+
+            const player = gameState.players[currentPlayerId];
+            if (!player) return;
+
+            let newX = player.x;
+            let newY = player.y;
+
+            switch(direction) {
+                case 'up':
+                    newY--;
+                    break;
+                case 'down':
+                    newY++;
+                    break;
+                case 'left':
+                    newX--;
+                    break;
+                case 'right':
+                    newX++;
+                    break;
+            }
+
+            // 檢查是否可以移動
+            if (newX >= 0 && newX < COLS && newY >= 0 && newY < ROWS) {
+                if (gameState.maze[newY][newX] !== 1) {
+                    // 複製鍵盤移動的邏輯
+                    const playerRef = database.ref(`rooms/${currentRoomId}/players/${currentPlayerId}`);
+
+                    const oldX = player.x;
+                    const oldY = player.y;
+                    gameState.players[currentPlayerId].x = newX;
+                    gameState.players[currentPlayerId].y = newY;
+                    gameState.players[currentPlayerId].direction = direction;
+
+                    const updates = { x: newX, y: newY, direction: direction };
+
+                    // 檢查豆子
+                    if (gameState.maze[newY][newX] === 2) {
+                        updates.score = (player.score || 0) + 10;
+                        gameState.players[currentPlayerId].score = updates.score;
+                        database.ref(`rooms/${currentRoomId}/maze/${newY}/${newX}`).set(0);
+                    } else if (gameState.maze[newY][newX] === 3) {
+                        updates.score = (player.score || 0) + 50;
+                        gameState.players[currentPlayerId].score = updates.score;
+                        database.ref(`rooms/${currentRoomId}/maze/${newY}/${newX}`).set(0);
+                    }
+
+                    // 檢查玩家碰撞
+                    if (gameState.players) {
+                        for (const [otherId, otherPlayer] of Object.entries(gameState.players)) {
+                            if (otherId !== currentPlayerId &&
+                                otherPlayer.x === newX &&
+                                otherPlayer.y === newY) {
+
+                                const now = Date.now();
+                                const myInvincible = player.invincibleUntil && player.invincibleUntil > now;
+                                const otherInvincible = otherPlayer.invincibleUntil && otherPlayer.invincibleUntil > now;
+
+                                if (myInvincible || otherInvincible) {
+                                    break;
+                                }
+
+                                const myScore = updates.score || player.score || 0;
+                                const otherScore = otherPlayer.score || 0;
+
+                                if (myScore > otherScore) {
+                                    const gainedScore = Math.floor(otherScore / 2);
+                                    updates.score = myScore + gainedScore;
+                                    gameState.players[currentPlayerId].score = updates.score;
+
+                                    const otherRef = database.ref(`rooms/${currentRoomId}/players/${otherId}`);
+                                    const otherIndex = Object.keys(gameState.players).indexOf(otherId);
+                                    const respawnPos = startPositions[otherIndex % startPositions.length];
+                                    otherRef.update({
+                                        x: respawnPos.x,
+                                        y: respawnPos.y,
+                                        score: Math.floor(otherScore / 2),
+                                        invincibleUntil: Date.now() + 5000
+                                    });
+                                } else if (otherScore > myScore) {
+                                    const lostScore = Math.floor(myScore / 2);
+                                    const myIndex = Object.keys(gameState.players).indexOf(currentPlayerId);
+                                    const respawnPos = startPositions[myIndex % startPositions.length];
+
+                                    updates.x = respawnPos.x;
+                                    updates.y = respawnPos.y;
+                                    updates.score = lostScore;
+                                    updates.invincibleUntil = Date.now() + 5000;
+                                    gameState.players[currentPlayerId].x = respawnPos.x;
+                                    gameState.players[currentPlayerId].y = respawnPos.y;
+                                    gameState.players[currentPlayerId].score = lostScore;
+                                    gameState.players[currentPlayerId].invincibleUntil = updates.invincibleUntil;
+
+                                    const otherRef = database.ref(`rooms/${currentRoomId}/players/${otherId}`);
+                                    otherRef.update({
+                                        score: otherScore + (myScore - lostScore)
+                                    });
+                                }
+                                break;
+                            }
+                        }
+                    }
+
+                    playerRef.update(updates).catch((error) => {
+                        gameState.players[currentPlayerId].x = oldX;
+                        gameState.players[currentPlayerId].y = oldY;
+                    });
+                }
+            }
+        }
     </script>
 </body>
 </html>
