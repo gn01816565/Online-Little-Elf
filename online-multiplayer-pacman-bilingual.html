@@ -309,6 +309,7 @@
                 <span id="waitingMessage" data-i18n="waitingPlayers">等待其他玩家加入... (至少需要2位玩家)</span>
             </div>
 
+            <button id="addBotButton" data-i18n="addBot" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">🤖 新增電腦玩家</button>
             <button id="startButton" data-i18n="startGame" disabled>開始遊戲</button>
             <button class="back-button" id="btnLeaveLobby" data-i18n="leaveRoom">離開房間</button>
         </div>
@@ -350,6 +351,7 @@
                 shareCode: '分享此代碼給朋友加入遊戲',
                 playersJoined: '已加入玩家',
                 waitingPlayers: '等待其他玩家加入... (至少需要2位玩家)',
+                addBot: '🤖 新增電腦玩家',
                 startGame: '開始遊戲',
                 leaveRoom: '離開房間',
                 leaveGame: '離開遊戲',
@@ -383,6 +385,7 @@
                 shareCode: 'Share this code with friends to join',
                 playersJoined: 'Players Joined',
                 waitingPlayers: 'Waiting for other players... (At least 2 players required)',
+                addBot: '🤖 Add Bot Player',
                 startGame: 'Start Game',
                 leaveRoom: 'Leave Room',
                 leaveGame: 'Leave Game',
@@ -449,13 +452,14 @@
 
         // ==================== Firebase 配置 ====================
         const firebaseConfig = {
-            apiKey: "AIzaSyBexampleKey123456789",
-            authDomain: "your-project.firebaseapp.com",
-            databaseURL: "https://your-project-default-rtdb.firebaseio.com",
-            projectId: "your-project",
-            storageBucket: "your-project.appspot.com",
-            messagingSenderId: "123456789",
-            appId: "1:123456789:web:abcdef123456"
+            apiKey: "AIzaSyCrCHG4dLUAQYq2GumQ8T2GtB-P3y1hfek",
+            authDomain: "online-little-elf.firebaseapp.com",
+            databaseURL: "https://online-little-elf-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "online-little-elf",
+            storageBucket: "online-little-elf.firebasestorage.app",
+            messagingSenderId: "771791599668",
+            appId: "1:771791599668:web:1e08a875b023f461d23261",
+            measurementId: "G-CGVVYHVCTE"
         };
 
         let database;
@@ -811,12 +815,59 @@
                             y: newY
                         };
 
+                        // 檢查豆子
                         if (gameState.maze[newY][newX] === 2) {
                             updates.score = (player.score || 0) + 10;
                             await database.ref(`rooms/${currentRoomId}/maze/${newY}/${newX}`).set(0);
                         } else if (gameState.maze[newY][newX] === 3) {
                             updates.score = (player.score || 0) + 50;
                             await database.ref(`rooms/${currentRoomId}/maze/${newY}/${newX}`).set(0);
+                        }
+
+                        // 檢查玩家碰撞
+                        if (gameState.players) {
+                            for (const [otherId, otherPlayer] of Object.entries(gameState.players)) {
+                                if (otherId !== currentPlayerId &&
+                                    otherPlayer.x === newX &&
+                                    otherPlayer.y === newY) {
+
+                                    const myScore = updates.score || player.score || 0;
+                                    const otherScore = otherPlayer.score || 0;
+
+                                    if (myScore > otherScore) {
+                                        // 我分數較高，吃掉對方
+                                        const gainedScore = Math.floor(otherScore / 2);
+                                        updates.score = myScore + gainedScore;
+
+                                        // 對方重生到起始位置
+                                        const otherRef = database.ref(`rooms/${currentRoomId}/players/${otherId}`);
+                                        const otherIndex = Object.keys(gameState.players).indexOf(otherId);
+                                        const respawnPos = startPositions[otherIndex % startPositions.length];
+                                        await otherRef.update({
+                                            x: respawnPos.x,
+                                            y: respawnPos.y,
+                                            score: Math.floor(otherScore / 2)
+                                        });
+                                    } else if (otherScore > myScore) {
+                                        // 對方分數較高，我被吃掉
+                                        const lostScore = Math.floor(myScore / 2);
+                                        const myIndex = Object.keys(gameState.players).indexOf(currentPlayerId);
+                                        const respawnPos = startPositions[myIndex % startPositions.length];
+
+                                        updates.x = respawnPos.x;
+                                        updates.y = respawnPos.y;
+                                        updates.score = lostScore;
+
+                                        // 對方獲得分數
+                                        const otherRef = database.ref(`rooms/${currentRoomId}/players/${otherId}`);
+                                        await otherRef.update({
+                                            score: otherScore + (myScore - lostScore)
+                                        });
+                                    }
+                                    // 如果分數相同，雙方都不受影響
+                                    break;
+                                }
+                            }
                         }
 
                         await playerRef.update(updates);
@@ -899,7 +950,128 @@
                 });
             }
 
+            // Bot AI 移動
+            if (isHost && gameState && gameState.players) {
+                Object.keys(gameState.players).forEach(async (playerId) => {
+                    const player = gameState.players[playerId];
+                    if (player.isBot && Math.random() < 0.3) { // 30% 機率移動
+                        const directions = [
+                            { dx: 0, dy: -1 },  // 上
+                            { dx: 0, dy: 1 },   // 下
+                            { dx: -1, dy: 0 },  // 左
+                            { dx: 1, dy: 0 }    // 右
+                        ];
+
+                        // 隨機選擇一個方向
+                        const dir = directions[Math.floor(Math.random() * directions.length)];
+                        const newX = player.x + dir.dx;
+                        const newY = player.y + dir.dy;
+
+                        // 檢查是否可以移動
+                        if (newX >= 0 && newX < COLS && newY >= 0 && newY < ROWS &&
+                            gameState.maze[newY][newX] !== 1) {
+
+                            const playerRef = database.ref(`rooms/${currentRoomId}/players/${playerId}`);
+                            const updates = { x: newX, y: newY };
+
+                            // 檢查是否吃到豆子
+                            if (gameState.maze[newY][newX] === 2) {
+                                updates.score = (player.score || 0) + 10;
+                                const mazeRef = database.ref(`rooms/${currentRoomId}/maze/${newY}/${newX}`);
+                                await mazeRef.set(0);
+                            } else if (gameState.maze[newY][newX] === 3) {
+                                updates.score = (player.score || 0) + 50;
+                                const mazeRef = database.ref(`rooms/${currentRoomId}/maze/${newY}/${newX}`);
+                                await mazeRef.set(0);
+                            }
+
+                            // 檢查玩家碰撞
+                            for (const [otherId, otherPlayer] of Object.entries(gameState.players)) {
+                                if (otherId !== playerId &&
+                                    otherPlayer.x === newX &&
+                                    otherPlayer.y === newY) {
+
+                                    const myScore = updates.score || player.score || 0;
+                                    const otherScore = otherPlayer.score || 0;
+
+                                    if (myScore > otherScore) {
+                                        // Bot分數較高，吃掉對方
+                                        const gainedScore = Math.floor(otherScore / 2);
+                                        updates.score = myScore + gainedScore;
+
+                                        // 對方重生
+                                        const otherRef = database.ref(`rooms/${currentRoomId}/players/${otherId}`);
+                                        const otherIndex = Object.keys(gameState.players).indexOf(otherId);
+                                        const respawnPos = startPositions[otherIndex % startPositions.length];
+                                        await otherRef.update({
+                                            x: respawnPos.x,
+                                            y: respawnPos.y,
+                                            score: Math.floor(otherScore / 2)
+                                        });
+                                    } else if (otherScore > myScore) {
+                                        // 對方分數較高，Bot被吃掉
+                                        const lostScore = Math.floor(myScore / 2);
+                                        const myIndex = Object.keys(gameState.players).indexOf(playerId);
+                                        const respawnPos = startPositions[myIndex % startPositions.length];
+
+                                        updates.x = respawnPos.x;
+                                        updates.y = respawnPos.y;
+                                        updates.score = lostScore;
+
+                                        // 對方獲得分數
+                                        const otherRef = database.ref(`rooms/${currentRoomId}/players/${otherId}`);
+                                        await otherRef.update({
+                                            score: otherScore + (myScore - lostScore)
+                                        });
+                                    }
+                                    break;
+                                }
+                            }
+
+                            await playerRef.update(updates);
+                        }
+                    }
+                });
+            }
+
             requestAnimationFrame(gameLoop);
+        }
+
+        let botCounter = 0;
+
+        async function addBotPlayer() {
+            if (!currentRoomId || !isHost) return;
+
+            botCounter++;
+            const botId = 'bot_' + Date.now() + '_' + botCounter;
+            const botNames = ['小紅Bot', '小藍Bot', '小綠Bot', '小黃Bot', '小紫Bot', '小橙Bot', '小粉Bot', '小青Bot'];
+            const botName = botNames[(botCounter - 1) % botNames.length];
+
+            // 取得目前玩家數量
+            const roomRef = database.ref(`rooms/${currentRoomId}/players`);
+            const snapshot = await roomRef.once('value');
+            const players = snapshot.val() || {};
+            const playerCount = Object.keys(players).length;
+
+            if (playerCount >= 10) {
+                alert('房間已滿 (最多10位玩家)');
+                return;
+            }
+
+            // 使用下一個可用的顏色和位置
+            const colorIndex = playerCount;
+            const pos = startPositions[colorIndex];
+
+            const botRef = database.ref(`rooms/${currentRoomId}/players/${botId}`);
+            await botRef.set({
+                name: botName,
+                color: playerColors[colorIndex],
+                score: 0,
+                x: pos.x,
+                y: pos.y,
+                direction: 'right',
+                isBot: true
+            });
         }
 
         async function leaveRoom() {
@@ -917,6 +1089,7 @@
             document.getElementById('btnJoinRoom').addEventListener('click', joinRoom);
             document.getElementById('btnBackFromCreate').addEventListener('click', backToMenu);
             document.getElementById('btnBackFromJoin').addEventListener('click', backToMenu);
+            document.getElementById('addBotButton').addEventListener('click', addBotPlayer);
             document.getElementById('startButton').addEventListener('click', startGame);
             document.getElementById('btnLeaveLobby').addEventListener('click', leaveRoom);
             document.getElementById('btnLeaveGame').addEventListener('click', leaveRoom);
